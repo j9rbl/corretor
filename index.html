@@ -245,13 +245,13 @@ function mergeSimilarColors(data) {
             const correctedCanvas = document.getElementById('correctedCanvas');
             correctedCanvas.width = originalCanvas.width;
             correctedCanvas.height = originalCanvas.height;
-// Primeiro, fusione cores semelhantes
-    mergeSimilarColors(originalData);
-
+            
             const originalContext = originalCanvas.getContext('2d');
             const correctedContext = correctedCanvas.getContext('2d');
 
             const originalData = originalContext.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+           / Primeiro, fusione cores semelhantes
+    mergeSimilarColors(originalData);
             const correctedData = originalContext.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
 
             const usedColors = {};
