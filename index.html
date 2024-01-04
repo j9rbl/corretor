@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,14 +11,24 @@
             display: inline-block;
             margin: 5px;
         }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
-
 <body>
     <input type="file" id="imageInput" onchange="loadImage(event)" />
     <button id="correctButton" onclick="correctColors()" style="display: none;">Corrigir Tons</button>
-
-
+    <button id="countButton" onclick="countPixels()" style="display: none;">Fazer Contagem Taco de 10</button>
     <br>
     <canvas id="originalCanvas"></canvas>
     <canvas id="correctedCanvas"></canvas>
@@ -27,142 +36,49 @@
 
     <script>
         const colors = {
-            "NUDE 7082/1": "#f5cbc6",
- "NUDE 7082": "#e5c4bb",
-"PALHA CLARO 7036/3": "#e4a596",
-"PALHA ESCURO 7034/1": "#d2797c",
-"ROSÊ TAN 7058": "#df988c",
-"BRANCO": "#ffffff",
-"PRETO": "#000000",
-"CREME 7039":  "#c7aa8d",
-"CARAMELO 7041":  "#d59b68",
-"CHOCOLATE 7056":  "#6d2f29",
-"MARROM 7011/1":  "#943839",
-"ROSA VELHO ESCURO 7067":  "#b64951",
-"ROSA VELHO CLARO 7067/1":  "#c8747c",
-"BEGE ESCURO 7071/1": "#d2bda1",
-"MARFIM 7055": "#d6ca99",
-"SALMÃO 7032": "#f46c66",
-"PÊSSEGO 7062/1": "#e0b296",
-"PÊSSEGO 7062/3": "#e19f75",
-"TERRACOTA 7028": "#bd4632",
-"TERRACOTA SS51": "#bc4532",
-"ROSA BEBÊ 4008": "#c9919c",
-"CARAMELO CLARO SS79": "#9e7255",
-"ROSA CHÁ SS20":  "#dac0b5",
-
-"ROSÊ SS24":  "#e08b90",
-"PALHA 7034/1":  "#d2797d",
-"PALHA SS65":  "#b45e6f",
-"VERMELHO 7005":  "#de0100",
-"AMARELO CANÁRIO 7020/1":  "#f3fe09",
-"AZUL CANETA 7007":  "#0018cc",
-"MARSALA 7006":  "#79040c",
-"MARSALA 7006/1":  "#5c0527",
-"MARSALA 7006/2":  "#5c0527",
-"UVA 7008":  "#550453",
-"ROSA BEBÊ 7009": "#e4aab9",
-"ROSA BEBÊ SS01":  "#f0bcbe",
-"AZUL BEBÊ SS02":  "#c8e9f8",
-"MARFIM SS04":  "#e9d29c",
-"VERDE BEBÊ SS05":  "#bddc9a",
-"LILÁS SS06":  "#b8b0e3",
-"AMARELO BEBÊ SS07":  "#e8e795",
-"PESSÊGO SS08":  "#febb87",
-"ROSA SECO 7061":  "#b56f79",
-"ROSÊ PEACH SS09": "#c98b7c",
-"MARSALA SS11":  "#440d13",
-"OFF WHITE SS14": "#faf1e8",
-"VERDE MUSGO 7014":  "#153b23",
-"MARFIM 4013":  "#cab589",
-"ROSA PINK 7015":  "#e02e60",
-"VERDE BANDEIRA 7016":  "#0c481a",
-"NUDE SS15":  "#c3978c",
-"LILÁS CLARO 7018/1":  "#aca2df",
-"AZUL BEBÊ 7019":  "#00b2ff",
-"ROXO 7021":  "#b4dcf4",
-"AMARELO GEMA 7022":  "#f8a519",
-"AZUL MARINHO 7024":  "#191843",
-"VERDE LIMÃO 7025":  "#00be00",
-"NUDE SS17":  "#d29992",
-"ROSA CHICLETE 7016":  "#d29992",
-"LARANJA QUEIMADO 7030": "#bb541f",
-"CORAL 7031": "#f73e2a",
-"GOIABA 7033": "#d55d66",
-"PALHA 7034/1":  "#e5a594",
-"PALHA MÉDIO 7035/2": "#c89c8f",
-"AMARELO":  "#fef740",
-"AMARELO BEBÊ 7049":  "#fefab5",
-"ROSÊ PEACH 7051":  "#bb8c82",
-"VERDE MENTA 7052":  "#87b4a4",
-"MARFIM 7055":  "#f4e1d8",
-"ROSA CLARO 7060":  "#feb9e6",
-"PESSEGO CLARO 7062/1":  "#ecbea4",
-"AZUL TIFANY 7063":  "#4eade7",
-"ROSA CHÁ 7064": "#f1c8cc",
-"ROSA CHAMPAGNE 7065": "#fadcdc",
-"ROSÊ 7066": "#e7aebf",
-"ROSA VELHO 7067":  "#773f4a",
-"ROSA VELHO CLARO 7067/1":  "#773f4a",
-"VERDE TIFANY CLARO 7068/1":  "#81d8cf",
-"VERDE PISTACHE 7069":  "#20350a",
-"BEGE ESCURO 7071/1":  "#eddec9",
-"KRAFT 7080":  "#b08466",
-"LAVANDA 7045":  "#eeddff",
-"NUDE 7082/2":  "#eabfac",
-"VERDE FLUORESCENTE F7087":  "#7dfe30",
-"LARANJA FLUORESCENTE F7085":  "#fc5500",
-"AMARELO FLUORESCENTE F7076":  "#f5ff01",
-"ROSA FLUORESCENTE F7088":  "#fe2ba0",
-"UVA 6017":  "#4a0d53",
-"BRANCO 6000":  "#d6d5d1",
-"GOIABA 6020":  "#bd5e66",
-"AZUL CANETA 4026":  "#020067",
-"AZUL MARINHO 4027":  "#203668",
-"GOIABA 4011":  "#8c4650",
-"ROSA CLARO 4019":  "#fd6fe3",
-"NUDE 4017":  "#ccaa9e",
-"SALMÃO 4021":  "#f97d71",
-"BEGE I 4023":  "#f0dac2",
-"ROSA CHÁ SS20":  "#f1c3ac",
-"MARSALA 7006":  "#79040d",
-"PALHA 7034/1":  "#d6a292",
-"PALHA 7035/2":  "#c99d90",
-"VERDE LIMÃO 7025":  "#3db64e",
-"KRAFT SS49":  "#e5b38e",
-"CARAMELO ESCURO SS50":  "#a86644",
-"CARAMELO CLARO SS79":  "#ba673f",
-"PESSEGO CLARO 7062/1":  "#efc1a7",
-"PESSEGO 7062/5":  "#e49b7a",
-"CARAMELO CLARO TELHA 7041/1":  "#d57c6b",
-"PESSEGO 6018":  "#e98255",
-"PESSEGO 7062/4":  "#eda886",
-"PESSEGO 7062/5":  "#e39a79",
-"CINZA 7047/3":  "#aaaaaa",
-"AZUL CIAN 7017":  "#00dcff",
-"MARROM CLARO 7010/3":  "#81533c",
-
-"PESSEGO 7062/1":  "#eaaf87",
-"CINZA 7050/5":  "#a5a5a5",
-"LILÁS 7018":  "#745ab1",
-"VERDE BEBÊ 7026":  "#31ffa5",
-"VERDE OLIVA CLARO 7057":  "#4a7740",
-"VERDE TIFANY CLARO 7068/1":  "#00efe6",
-"VERDE FLORESTA 7037":  "#009687",
-"CINZA 7028/1":  "#262626",
-"CINZA 7029/2":  "#454545",
-"CINZA 7027/4":  "#7e7e85",
-"CLASSIC BLUE 7054":  "#0056bc",
-"AZUL BEBÊ 4010":  "#008fef008fef",
-"ROSA PINK 4020":  "#b0009b",
-"VERDE TINAFY CLARO 4022":  "#92f4ee",
-"CINZA SS41":  "#5e626d",
-"ROXO SS62":  "#2f0989",
-"ROXO 7021":  "#7103a6",
-"UVA CLARO 7008/1":  "#531764",
-"CINZA BEBÊ 138":  "#d2d2d2",
+            "BRANCO":  "#ffffff",
+"PRETO":  "#000000",
+"AZUL CLARO/CYAN":  "#00fffc",
+"AZUL MÉDIO":  "#00adff",
+"AZUL":  "#003bff",
+"ROSA CLARO":  "#ffa5e0",
+"ROSA PINK":  "#ff0480",
+"ROSA/CHICLETE":  "#ff00cc",
+"ROXO":  "#c000ff",
+"ROXO ESCURO":  "#6a00a1",
+"AMARELO BEBÊ":  "#fffdb3",
+"AMARELO":  "#fff600",
+"LARANJA":  "#ffa200",
+"LARANJA ESCURO":  "ff8a00",
+"VERMELHO":  "#ff0000",
+"VERMELHO ESCURO":  "#ab0000",
+"VERDE FLUORESCENTE":  "#9cff00",
+"VERDE":  "#00b300",
+"VERDE BANDEIRA":  "#037603",
+"VERDE ESCURO":  "#00520c",
+"VERDE TIFANNY":  "#00ffb4",
+"CINZA CLARO":  "#c7c7c7",
+"CINZA":  "#939393",
+"CHUMBO": "#464646",
+"BEGE/CREME":  "#ffdcbf",
+"PÊSSEGO/SALMÃO CLARO":  "#fdbdab",
+"PÊSSEGO/SALMÃO MÉDIO":  "#fbb697",
+"PÊSSEGO/SALMÃO ESCURO":  "#f9957b",
+"CARAMELO CLARO":  "#d07a5f",
+"CARAMELO MÉDIO":  "#b86851",
+"CARAMELO ESCURO":  "#9e4a32",
+"MARROM CLARO":  "#814f36",
+"MARROM":  "#763726",
+"MARROM ESCURO":  "#431e09",
+"PALHA/MARFIM":  "#fde5d0",
+"MARSALA AVERMELHADO":  "#740012",
+"CARAMELO TELHA":  "#d1786a",
+"UVA":  "#a1008c",
+"AMARELO GEMA":  "#ffc600",
 
         };
+
+        let pixelCount = {};
 
         function closestColor(hex) {
             let closest;
@@ -182,7 +98,7 @@
         function colorDifference(hex1, hex2) {
             const rgb1 = hexToRgb(hex1);
             const rgb2 = hexToRgb(hex2);
-
+            
             return Math.abs(rgb1.r - rgb2.r) + Math.abs(rgb1.g - rgb2.g) + Math.abs(rgb1.b - rgb2.b);
         }
 
@@ -198,10 +114,10 @@
             const file = event.target.files[0];
             const reader = new FileReader();
 
-            reader.onload = function (readerEvent) {
+            reader.onload = function(readerEvent) {
                 const image = new Image();
 
-                image.onload = function () {
+                image.onload = function() {
                     const canvas = document.getElementById('originalCanvas');
                     canvas.width = image.width;
                     canvas.height = image.height;
@@ -215,31 +131,6 @@
             reader.readAsDataURL(file);
         }
 
-function mergeSimilarColors(data) {
-    const threshold = 10; // Você pode ajustar este valor conforme necessário
-
-    for (let i = 0; i < data.data.length; i += 4) {
-        for (let j = i + 4; j < data.data.length; j += 4) {
-            const diff = colorDifference({
-                r: data.data[i],
-                g: data.data[i + 1],
-                b: data.data[i + 2]
-            }, {
-                r: data.data[j],
-                g: data.data[j + 1],
-                b: data.data[j + 2]
-            });
-
-            if (diff < threshold) {
-                data.data[j] = (data.data[i] + data.data[j]) / 2;
-                data.data[j + 1] = (data.data[i + 1] + data.data[j + 1]) / 2;
-                data.data[j + 2] = (data.data[i + 2] + data.data[j + 2]) / 2;
-            }
-        }
-    }
-}
-
-
         function correctColors() {
             const originalCanvas = document.getElementById('originalCanvas');
             const correctedCanvas = document.getElementById('correctedCanvas');
@@ -248,26 +139,24 @@ function mergeSimilarColors(data) {
             
             const originalContext = originalCanvas.getContext('2d');
             const correctedContext = correctedCanvas.getContext('2d');
-
+            
             const originalData = originalContext.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
-           / Primeiro, fusione cores semelhantes
-    mergeSimilarColors(originalData);
             const correctedData = originalContext.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
-
+            
             const usedColors = {};
 
             for (let i = 0; i < originalData.data.length; i += 4) {
                 const r = originalData.data[i];
-                const g = originalData.data[i + 1];
-                const b = originalData.data[i + 2];
+                const g = originalData.data[i+1];
+                const b = originalData.data[i+2];
                 const hex = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-
+                
                 const closest = closestColor(hex);
                 const closestRgb = hexToRgb(colors[closest]);
 
                 correctedData.data[i] = closestRgb.r;
-                correctedData.data[i + 1] = closestRgb.g;
-                correctedData.data[i + 2] = closestRgb.b;
+                correctedData.data[i+1] = closestRgb.g;
+                correctedData.data[i+2] = closestRgb.b;
 
                 usedColors[closest] = colors[closest];
             }
@@ -276,70 +165,71 @@ function mergeSimilarColors(data) {
 
             const colorsUsedDiv = document.getElementById('colorsUsed');
             colorsUsedDiv.innerHTML = '';
+            
+            const table = document.createElement('table');
+            const headerRow = table.insertRow(0);
+            const headers = ['Cor', 'Código Hex', 'Quantidade Total', 'Quantidade de Folhas'];
+            
+            for (let header of headers) {
+                const th = document.createElement('th');
+                th.innerText = header;
+                headerRow.appendChild(th);
+            }
+
             for (let name in usedColors) {
                 const colorBox = document.createElement('div');
                 colorBox.className = 'color-box';
                 colorBox.style.backgroundColor = usedColors[name];
-                colorsUsedDiv.appendChild(colorBox);
+                
+                const row = table.insertRow(-1);
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                const cell3 = row.insertCell(2);
+                const cell4 = row.insertCell(3);
 
-                const colorName = document.createElement('span');
-                colorName.innerText = name;
-                colorsUsedDiv.appendChild(colorName);
+                cell1.appendChild(colorBox);
+                cell2.innerText = name;
+                cell3.innerText = pixelCount[name] || 0;
+                cell4.innerText = ''; // Quantidade de Folhas - inicialmente vazio
+            }
+
+            colorsUsedDiv.appendChild(table);
+
+            document.getElementById('countButton').style.display = 'inline';
+            pixelCount = {};
+        }
+
+        function countPixels() {
+            const correctedCanvas = document.getElementById('correctedCanvas');
+            const correctedContext = correctedCanvas.getContext('2d');
+            const correctedData = correctedContext.getImageData(0, 0, correctedCanvas.width, correctedCanvas.height);
+
+            for (let i = 0; i < correctedData.data.length; i += 4) {
+                const r = correctedData.data[i];
+                const g = correctedData.data[i+1];
+                const b = correctedData.data[i+2];
+                const hex = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+
+                if (pixelCount[hex]) {
+                    pixelCount[hex]++;
+                } else {
+                    pixelCount[hex] = 1;
+                }
+            }
+
+            const colorsUsedDiv = document.getElementById('colorsUsed');
+            const table = colorsUsedDiv.querySelector('table');
+
+            if (table) {
+                const rows = table.rows;
+
+                for (let i = 1; i < rows.length; i++) {
+                    const colorName = rows[i].cells[1].innerText;
+                    rows[i].cells[2].innerText = pixelCount[colorName] || 0;
+                    rows[i].cells[3].innerText = Math.ceil((pixelCount[colorName] || 0) / 35);
+                }
             }
         }
-
-        function downloadCorrectedImage() {
-            const correctedCanvas = document.getElementById('correctedCanvas');
-            const downloadLink = document.createElement('a');
-            downloadLink.href = correctedCanvas.toDataURL();
-            downloadLink.download = 'corrected_image.png';
-            downloadLink.click();
-        }
-function downloadColorTable() {
-    const colorsUsedDiv = document.getElementById('colorsUsed');
-    const children = colorsUsedDiv.childNodes;
-
-    const padding = 10
-    const boxSize = 20;
-    const rowHeight = boxSize + (2 * padding);
-    const canvasWidth = 500;
-    const canvasHeight = children.length / 2 * rowHeight;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-    const context = canvas.getContext('2d');
-    // Define o fundo do canvas para branco
-    context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, canvasWidth, canvasHeight);
-
-    context.font = '16px Arial';
-    context.textBaseline = 'middle';
-
-    for (let i = 0; i < children.length; i += 2) {
-        const colorBox = children[i];
-        const colorName = children[i + 1];
-
-        const y = (i / 2) * rowHeight + padding;
-
-        context.fillStyle = colorBox.style.backgroundColor;
-        context.fillRect(padding, y, boxSize, boxSize);
-
-        context.fillStyle = '#000';
-        context.fillText(colorName.innerText, boxSize + 2 * padding, y + boxSize / 2);
-    }
-
-    const downloadLink = document.createElement('a');
-    downloadLink.href = canvas.toDataURL();
-    downloadLink.download = 'color_table.png';
-    downloadLink.click();
-}
-
-
     </script>
-
-    <button onclick="downloadCorrectedImage()">Baixar Imagem Corrigida</button>
-<button onclick="downloadColorTable()">Baixar Tabela de Cores</button>
 </body>
-
 </html>
