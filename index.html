@@ -5,53 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Corretor de Tons</title>
     <style>
+        body {
+            text-align: center;
+            /* Centraliza todo o conteúdo na página */
+            margin: 0;
+            padding: 0;
+        }
+
+        #imageInput {
+            margin-top: 20px;
+            /* Ajusta a margem superior do botão de carregar imagem */
+        }
+
+        #correctButton,
+        #countButton5,
+        #countButton10,
+        #countButton7,
+        #countButton12,
+        #countButton16,
+        #countButton22 {
+            display: none;
+            margin: 10px;
+            /* Ajusta a margem entre os botões */
+        }
+
+        #colorsUsed {
+            margin-top: 10px;
+            /* Ajusta a margem superior da tabela */
+        }
+
         .color-box {
-            width: 80px;
-            height: 33px;
+            width: 78px;
+            height: 28px;
             display: inline-block;
             margin: 3px;
         }
+
         table {
             border-collapse: collapse;
-            width: 32%;
-            margin-top: 0px;
+            width: 35%;
+            margin: 0px auto;
+            /* Centraliza a tabela e adiciona margem superior e inferior */
         }
-        th, td {
-            border: 0px solid #ddd;
-            padding: 0px;
+
+        th,
+        td {
+            border: 1px solid #000;
+            /* Adiciona borda preta */
+            padding: 5px;
             text-align: center;
         }
+
         th {
             background-color: #f2f2f2;
         }
-        #colorsUsed {
-            margin-top: 10px;
-        }
-        button {
-            margin: 1px;
-        }
     </style>
 </head>
+
 <body>
     <input type="file" id="imageInput" onchange="loadImage(event)" />
     <button id="correctButton" onclick="correctColors()" style="display: none;">Corrigir Tons</button>
-<button id="countButton5" onclick="countPixels(117)" style="display: none;">Fazer Contagem Taco de 5</button>
-    <button id="countButton10" onclick="countPixels(28)" style="display: none;">Fazer Contagem Taco de 10</button>
-<button id="countButton7" onclick="countPixels(60)" style="display: none;">Fazer Contagem Taco de 7</button>
-<button id="countButton12" onclick="countPixels(18)" style="display: none;">Fazer Contagem Taco de 12</button>
-<button id="countButton16" onclick="countPixels(10)" style="display: none;">Fazer Contagem Taco de 16</button>
-<button id="countButton22" onclick="countPixels(5)" style="display: none;">Fazer Contagem Taco de 22</button>
-<button id="countButton22" onclick="countPixels(5)" style="display: none;">Fazer Contagem Taco de 22</button>
-<button id="countStripes()" onclick="countStripes()" style="display: none;">Contar Faixas</button>
+    <button id="countButton5" onclick="countPixels(117)" style="display: none;">Taco de 5</button>
+    <button id="countButton10" onclick="countPixels(28)" style="display: none;">Taco de 10</button>
+    <button id="countButton7" onclick="countPixels(60)" style="display: none;">Taco de 7</button>
+    <button id="countButton12" onclick="countPixels(18)" style="display: none;">Taco de 12</button>
+    <button id="countButton16" onclick="countPixels(10)" style="display: none;">Taco de 16</button>
+    <button id="countButton22" onclick="countPixels(5)" style="display: none;">Taco de 22</button>
+<button id="downloadCorrectedButton" onclick="downloadCorrectedImage()" style="display: none;">Baixar imagem Corrigida</button>
+<button id="downloadColorTableButton" onclick="downloadColorTable()" style="display: none;">Baixar Tabela de cores</button>
 
-
-
-
-    
     <br>
     <canvas id="originalCanvas"></canvas>
     <canvas id="correctedCanvas"></canvas>
     <div id="colorsUsed"></div>
+
 
     <script>
         const colors = {
@@ -59,8 +86,11 @@
 "PRETO":  "#000000",
 "AZUL CLARO/CYAN":  "#00fffc",
 "AZUL MÉDIO":  "#00adff",
-"AZUL":  "#003bff",
+"AZUL":  "#002aff",
+"AZUL ESCURO":  "#002499",
+"AZUL CELESTE":  "#037aff",
 "ROSA CLARO":  "#ffa5e0",
+"AZUL BEBÊ":  "#aae2ff",
 "ROSA PINK":  "#ff0480",
 "ROSA/CHICLETE":  "#ff00cc",
 "ROXO":  "#c000ff",
@@ -72,10 +102,12 @@
 "VERMELHO":  "#ff0000",
 "VERMELHO ESCURO":  "#ab0000",
 "VERDE FLUORESCENTE":  "#9cff00",
+"VERDE TIFANNY":  "#00ffb4",
 "VERDE":  "#00b300",
 "VERDE BANDEIRA":  "#037603",
 "VERDE ESCURO":  "#00520c",
-"VERDE TIFANNY":  "#00ffb4",
+"VERDE OLIVA":  "#485a00",
+"VERDE MUSGO":  "#1f370f",
 "CINZA CLARO":  "#c7c7c7",
 "CINZA":  "#939393",
 "CHUMBO": "#464646",
@@ -86,7 +118,7 @@
 "CARAMELO CLARO":  "#d07a5f",
 "CARAMELO MÉDIO":  "#b86851",
 "CARAMELO ESCURO":  "#9e4a32",
-"MARROM CLARO":  "#814f36",
+"MARROM CLARO":  "#85492b",
 "MARROM":  "#763726",
 "MARROM ESCURO":  "#431e09",
 "PALHA/MARFIM":  "#fde5d0",
@@ -94,24 +126,22 @@
 "CARAMELO TELHA":  "#d1786a",
 "UVA":  "#a1008c",
 "AMARELO GEMA":  "#ffba00",
+"MARSALA":  "#921d00",
+"LAVANDA":  "#c5a5ff",
+"OCRE":  "#c36a00",
+"VERDE TIF. ESCURO":  "#00b5bc",
+"AMARELO OURO":  "#F1D600",
+"CHOCOLATE":  "#6a3319",
+"OCRE":  "#ad6628",
+
+
+
+
+
 
         };
 
         let pixelCount = {};
-let stripesCount = {};
-
-function getColorAtPixel(imageData, x, y) {
-    const index = (y * imageData.width + x) * 4;
-    const r = imageData.data[index];
-    const g = imageData.data[index + 1];
-    const b = imageData.data[index + 2];
-    return rgbToHex(r, g, b);
-}
-
-function rgbToHex(r, g, b) {
-    const hex = ((r << 16) | (g << 8) | b).toString(16);
-    return "#" + "0".repeat(6 - hex.length) + hex;
-}
 
         function closestColor(hex) {
             let closest;
@@ -164,6 +194,28 @@ function rgbToHex(r, g, b) {
             reader.readAsDataURL(file);
         }
 
+ function loadImage(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (readerEvent) {
+                const image = new Image();
+
+                image.onload = function () {
+                    const canvas = document.getElementById('originalCanvas');
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    canvas.getContext('2d').drawImage(image, 0, 0);
+                    document.getElementById('correctButton').style.display = 'inline';
+                };
+
+                image.src = readerEvent.target.result;
+                document.getElementById('imageInput').style.display = 'none';
+            };
+
+            reader.readAsDataURL(file);
+        }
+
         function correctColors() {
             const originalCanvas = document.getElementById('originalCanvas');
             const correctedCanvas = document.getElementById('correctedCanvas');
@@ -199,6 +251,8 @@ function rgbToHex(r, g, b) {
                     pixelCount[closest] = 1;
                 }
             }
+document.getElementById('downloadCorrectedButton').style.display = 'inline';
+document.getElementById('downloadColorTableButton').style.display = 'inline';
 
             correctedContext.putImageData(correctedData, 0, 0);
 
@@ -236,11 +290,13 @@ function rgbToHex(r, g, b) {
 
             document.getElementById('countButton10').style.display = 'inline';
             document.getElementById('countButton5').style.display = 'inline';
-document.getElementById('countButton7').style.display = 'inline';
-document.getElementById('countButton12').style.display = 'inline';
-document.getElementById('countButton16').style.display = 'inline';
-document.getElementById('countButton22').style.display = 'inline';
-document.getElementById('countStripes()').style.display = 'inline';        }
+            document.getElementById('countButton7').style.display = 'inline';
+            document.getElementById('countButton12').style.display = 'inline';
+            document.getElementById('countButton16').style.display = 'inline';
+            document.getElementById('countButton22').style.display = 'inline';
+        }
+
+      
 
         function countPixels(divisor) {
             const colorsUsedDiv = document.getElementById('colorsUsed');
@@ -255,116 +311,49 @@ document.getElementById('countStripes()').style.display = 'inline';        }
                 }
             }
         }
-function countStripes() {
+
+function downloadCorrectedImage() {
     const correctedCanvas = document.getElementById('correctedCanvas');
-    const correctedContext = correctedCanvas.getContext('2d');
-    const correctedData = correctedContext.getImageData(0, 0, correctedCanvas.width, correctedCanvas.height);
-
-    const blockSize = 7;
-    const blockHeight = 5;
-    const totalBlocksX = Math.floor(correctedCanvas.width / blockSize);
-    const totalBlocksY = Math.floor(correctedCanvas.height / blockHeight);
-
-    stripesCount = {};
-
-    for (let blockY = 0; blockY < totalBlocksY; blockY++) {
-        for (let blockX = 0; blockX < totalBlocksX; blockX++) {
-            const startX = blockX * blockSize;
-            const startY = blockY * blockHeight;
-
-            // Iterating over Y-axis to cover each row in the block
-            for (let y = startY; y < startY + blockHeight; y++) {
-                // Análise da primeira fileira do bloco
-                let currentColor = null;
-                let currentStripeWidth = 0;
-
-                for (let x = startX; x < startX + blockSize; x++) {
-                    const pixelColor = getColorAtPixel(correctedData, x, y);
-
-                    if (currentColor === null || currentColor === pixelColor) {
-                        // Continua a faixa
-                        currentColor = pixelColor;
-                        currentStripeWidth++;
-                    } else {
-                        // Finaliza a faixa anterior
-                        recordStripe(currentColor, currentStripeWidth);
-
-                        // Inicia nova faixa
-                        currentColor = pixelColor;
-                        currentStripeWidth = 1;
-                    }
-                }
-
-                // Finaliza a última faixa na linha
-                recordStripe(currentColor, currentStripeWidth);
-            }
-        }
-    }
-
-    updateResultsTable();
+    const link = document.createElement('a');
+    link.href = correctedCanvas.toDataURL('image/png');
+    link.download = 'imagem_corrigida.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
-        function recordStripe(color, width) {
-            if (width > 0) {
-                const stripeKey = `${color}_${width}`;
-                if (stripesCount[stripeKey]) {
-                    stripesCount[stripeKey]++;
-                } else {
-                    stripesCount[stripeKey] = 1;
-                }
-            }
-        }
+function downloadColorTable() {
+    const colorsUsedDiv = document.getElementById('colorsUsed');
+    const table = colorsUsedDiv.querySelector('table');
+    
+    // Criando um novo canvas para desenhar a tabela
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    
+    // Definindo as dimensões do canvas para a largura e altura da tabela
+    canvas.width = table.offsetWidth;
+    canvas.height = table.offsetHeight;
 
-        function updateResultsTable() {
-            const colorsUsedDiv = document.getElementById('colorsUsed');
-            colorsUsedDiv.innerHTML = '';
+    // Desenhando a tabela no canvas
+    const tableImg = new Image();
+    const tableHTML = table.outerHTML;
+    tableImg.src = 'data:image/svg+xml,' + escape('<svg xmlns="http://www.w3.org/2000/svg" width="' + canvas.width + '" height="' + canvas.height + '">' +
+        '<foreignObject width="100%" height="100%">' +
+        tableHTML +
+        '</foreignObject>' +
+        '</svg>');
 
-            const table = document.createElement('table');
-            const headerRow = table.insertRow(0);
-            const headers = ['COR', 'NOME DA COR', 'TOTAL DE TACOS', 'QUANTIDADE DE FOLHAS', 'SOZINHOS', 'FAIXAS DE 2', 'FAIXAS DE 3', 'FAIXAS DE 4', 'FAIXAS DE 5', 'FAIXAS DE 6', 'FAIXAS DE 7'];
+    tableImg.onload = function () {
+        context.drawImage(tableImg, 0, 0);
+        
+        // Convertendo o canvas em uma imagem PNG e baixando-a
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = 'tabela_de_cores.png';
+        link.click();
+    };
+}
 
-            for (let header of headers) {
-                const th = document.createElement('th');
-                th.innerText = header;
-                headerRow.appendChild(th);
-            }
-
-            for (let name in colors) {
-                if (pixelCount[name] || stripesCount[`${name}_1`]) {
-                    const colorBox = document.createElement('div');
-                    colorBox.className = 'color-box';
-                    colorBox.style.backgroundColor = colors[name];
-
-                    const row = table.insertRow(-1);
-                    const cell1 = row.insertCell(0);
-                    const cell2 = row.insertCell(1);
-                    const cell3 = row.insertCell(2);
-                    const cell4 = row.insertCell(3);
-                    const cell5 = row.insertCell(4);
-                    const cell6 = row.insertCell(5);
-                    const cell7 = row.insertCell(6);
-                    const cell8 = row.insertCell(7);
-                    const cell9 = row.insertCell(8);
-                    const cell10 = row.insertCell(9);
-                    const cell11 = row.insertCell(10);
-                    const cell12 = row.insertCell(11);
-
-                    cell1.appendChild(colorBox);
-                    cell2.innerText = name;
-                    cell3.innerText = pixelCount[name] || 0;
-                    cell4.innerText = ''; // Não exibimos a quantidade de folhas aqui
-                    cell5.innerText = pixelCount[name] - (stripesCount[`${name}_1`] || 0);
-                    cell6.innerText = stripesCount[`${name}_2`] || 0;
-                    cell7.innerText = stripesCount[`${name}_3`] || 0;
-                    cell8.innerText = stripesCount[`${name}_4`] || 0;
-                    cell9.innerText = stripesCount[`${name}_5`] || 0;
-                    cell10.innerText = stripesCount[`${name}_6`] || 0;
-                    cell11.innerText = stripesCount[`${name}_7`] || 0;
-                }
-            }
-
-            colorsUsedDiv.appendChild(table);
-        }
 
 
     </script>
