@@ -6,6 +6,7 @@ document.getElementById('correctColorsButton').addEventListener('click', correct
 let canvas = document.getElementById('imageCanvas');
 let ctx = canvas.getContext('2d');
 let img = new Image();
+let originalImageData = null;
 
 const colors = {
     "BRANCO": "#ffffff",
@@ -77,6 +78,7 @@ function handleImage(e) {
             canvas.width = img.width;
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
+            originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             updateImageInfo();
         }
         img.src = event.target.result;
@@ -85,6 +87,9 @@ function handleImage(e) {
 }
 
 function applySharpen() {
+    if (!originalImageData) return;
+
+    ctx.putImageData(originalImageData, 0, 0);
     let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     let data = imageData.data;
 
