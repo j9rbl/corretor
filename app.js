@@ -1,6 +1,7 @@
 document.getElementById('imageLoader').addEventListener('change', handleImage, false);
 document.getElementById('sharpenButton').addEventListener('click', applySharpen, false);
 document.getElementById('indexColorButton').addEventListener('click', convertToIndexedColors, false);
+document.getElementById('correctColorsButton').addEventListener('click', correctColors, false);
 
 let canvas = document.getElementById('imageCanvas');
 let ctx = canvas.getContext('2d');
@@ -69,16 +70,14 @@ const colors = {
     "DOCE DE LEITE": "#edad75"
 };
 
-let originalImageData = null;
-
 function handleImage(e) {
     let reader = new FileReader();
-    reader.onload = function(event){
-        img.onload = function(){
+    reader.onload = function(event) {
+        img.onload = function() {
             canvas.width = img.width;
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
-            originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            updateImageInfo();
         }
         img.src = event.target.result;
     }
@@ -86,66 +85,55 @@ function handleImage(e) {
 }
 
 function applySharpen() {
-    if (!originalImageData) return;
+    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let data = imageData.data;
 
-    const weights = [
+    let sharpenMatrix = [
         0, -1, 0,
         -1, 5, -1,
         0, -1, 0
     ];
 
-    const side = Math.round(Math.sqrt(weights.length));
-    const halfSide = Math.floor(side / 2);
+    let w = canvas.width;
+    let h = canvas.height;
 
-    const src = originalImageData.data;
-    const sw = originalImageData.width;
-    const sh = originalImageData.height;
+    let tempCanvas = document.createElement('canvas');
+    let tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = w;
+    tempCanvas.height = h;
+    tempCtx.putImageData(imageData, 0, 0);
 
-    const output = ctx.createImageData(sw, sh);
-    const dst = output.data;
+    for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+            let idx = (y * w + x) * 4;
 
-    for (let y = 0; y < sh; y++) {
-        for (let x = 0; x < sw; x++) {
-            let sy = y;
-            let sx = x;
-            let dstOff = (y * sw + x) * 4;
             let r = 0, g = 0, b = 0;
+            let k = 0;
 
-            for (let cy = 0; cy < side; cy++) {
-                for (let cx = 0; cx < side; cx++) {
-                    let scy = sy + cy - halfSide;
-                    let scx = sx + cx - halfSide;
-
-                    if (scy >= 0 && scy < sh && scx >= 0 && scx < sw) {
-                        let srcOff = (scy * sw + scx) * 4;
-                        let wt = weights[cy * side + cx];
-
-                        r += src[srcOff] * wt;
-                        g += src[srcOff + 1] * wt;
-                        b += src[srcOff + 2] * wt;
-                    }
+            for (let ky = -1; ky <= 1; ky++) {
+                for (let kx = -1; kx <= 1; kx++) {
+                    let kernelIdx = ((y + ky) * w + (x + kx)) * 4;
+                    r += tempCtx.getImageData(x + kx, y + ky, 1, 1).data[0] * sharpenMatrix[k];
+                    g += tempCtx.getImageData(x + kx, y + ky, 1, 1).data[1] * sharpenMatrix[k];
+                    b += tempCtx.getImageData(x + kx, y + ky, 1, 1).data[2] * sharpenMatrix[k];
+                    k++;
                 }
             }
 
-            dst[dstOff] = r;
-            dst[dstOff + 1] = g;
-            dst[dstOff + 2] = b;
-            dst[dstOff + 3] = 255;
+            data[idx] = r;
+            data[idx + 1] = g;
+            data[idx + 2] = b;
         }
     }
 
-    ctx.putImageData(output, 0, 0);
-    originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    ctx.putImageData(imageData, 0, 0);
 }
 
 function convertToIndexedColors() {
-    if (!originalImageData) return;
-
-    const colorValues = Object.values(colors).map(hexToRgb);
-    const usedColors = new Set();
-
     let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     let data = imageData.data;
+    let colorValues = Object.values(colors).map(hexToRgb);
+    let usedColors = new Set();
 
     for (let i = 0; i < data.length; i += 4) {
         let nearestColor = findNearestColor(data[i], data[i + 1], data[i + 2], colorValues);
@@ -257,6 +245,33 @@ function replaceColor(oldColor, newColor) {
     }
 
     ctx.putImageData(imageData, 0, 0);
-    enlargePixels();
+    updateImageInfo(getUsedColors());
 }
 
+function getUsedColors() {
+    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let data = imageData.data;
+    let usedColors = new Set();
+
+    for (let i = 0; i < data.length; i += 4) {
+        usedColors.add(`rgb(${data[i]},${data[i + 1]},${data[i + 2]})`);
+    }
+
+    return Array.from(usedColors);
+}
+
+function correctColors() {
+    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let data = imageData.data;
+    let colorValues = Object.values(colors).map(hexToRgb);
+
+    for (let i = 0; i < data.length; i += 4) {
+        let nearestColor = findNearestColor(data[i], data[i + 1], data[i + 2], colorValues);
+        data[i] = nearestColor[0];
+        data[i + 1] = nearestColor[1];
+        data[i + 2] = nearestColor[2];
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+    updateImageInfo(getUsedColors());
+}
