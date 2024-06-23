@@ -7,8 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mobile Image Editor</title>
     <link rel="stylesheet" href="https://unpkg.com/cropperjs/dist/cropper.css">
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -267,26 +266,7 @@
         let resizedCanvas;
         let originalImageData;
 
-        // Configuração do Firebase
-        var firebaseConfig = {
-            apiKey: "AIzaSyCItHl6wfx7ZR7jtz2t9Em2xEPRssMGhnQ",
-            authDomain: "taqueador-49a9d.firebaseapp.com",
-            projectId: "taqueador-49a9d",
-            storageBucket: "taqueador-49a9d.appspot.com",
-            messagingSenderId: "338642082771",
-            appId: "1:338642082771:web:dda5623273e851326ced26",
-            measurementId: "G-T54KW0FNF2"
-        };
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-
-        // Verificar se o usuário está autenticado
-        firebase.auth().onAuthStateChanged(function (user) {
-            if (!user) {
-                // Se o usuário não estiver autenticado, redirecionar para a página de login
-                window.location.href = "index.html";
-            }
-        });
+       
 
         function handleImageUpload(event) {
             const reader = new FileReader();
