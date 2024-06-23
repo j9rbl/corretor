@@ -2,31 +2,20 @@
 <html lang="en">
 
 <head>
+    <link rel="shortcut icon" href="favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taquear Imagem</title>
+    <title>Taquear Imagem Mobile</title>
     <link rel="stylesheet" href="https://unpkg.com/cropperjs/dist/cropper.css">
-<!-- Adicione o Firebase SDK aqui -->
-    <script src="https://www.gstatic.com/firebasejs/9.9.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.9.2/firebase-auth-compat.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCItHl6wfx7ZR7jtz2t9Em2xEPRssMGhnQ",
-  authDomain: "taqueador-49a9d.firebaseapp.com",
-  projectId: "taqueador-49a9d",
-  storageBucket: "taqueador-49a9d.appspot.com",
-  messagingSenderId: "338642082771",
-  appId: "1:338642082771:web:dda5623273e851326ced26",
-  measurementId: "G-T54KW0FNF2"
-        };
-        firebase.initializeApp(firebaseConfig);
-    </script>
+
+
     <style>
         body {
             font-family: Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: flex-start;
             height: 100vh;
             margin: 0;
             background-color: #2c2c2c;
@@ -34,24 +23,27 @@
             overflow: hidden;
         }
 
+        .header {
+            width: 100%;
+            padding: 10px;
+            background-color: #3c3c3c;
+            text-align: center;
+            font-size: 24px;
+        }
+
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #3c3c3c;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            max-width: 600px;
+            padding: 10px;
             width: 100%;
-            height: 100%;
-            overflow: hidden;
+            overflow-y: auto;
         }
 
         #imageContainer {
             width: 100%;
-            max-width: 600px;
-            height: 400px;
+            max-width: 100%;
+            height: auto;
             border: 2px dashed #ccc;
             display: flex;
             justify-content: center;
@@ -72,7 +64,6 @@
             display: flex;
             flex-direction: column;
             width: 100%;
-            max-width: 200px;
             background-color: #4c4c4c;
             padding: 15px;
             border-radius: 8px;
@@ -155,7 +146,8 @@
 
         #pixelationSection {
             display: flex;
-            align-items: flex-start;
+            flex-direction: column;
+            align-items: center;
             width: 100%;
         }
 
@@ -170,53 +162,16 @@
             flex-direction: column;
             margin-left: 10px;
             background-color: #4c4c4c;
-            padding: 70px;
-            border-radius: 22px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-            max-width: 200px;
-            min-width: 200px;
-            position: fixed;
-            right: 0;
-            top: 0;
-            height: 100%;
-            overflow-y: auto;
-        }
-/* Estilo do modal de login */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0, 0, 0);
-            background-color: rgba(0, 0, 0, 0.4);
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 300px;
-            text-align: center;
+            padding: 15px;
             border-radius: 8px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        #errorMessage {
-            color: red;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            width: 100%;
         }
     </style>
 </head>
 
 <body>
+    <div class="header">Taquear Imagem Mobile</div>
     <div class="container">
         <input type="file" id="imageInput" accept="image/*">
         <div id="imageContainer">
@@ -291,19 +246,6 @@
         </div>
     </div>
 
-    <!-- Login Modal -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <h2>Login</h2>
-            <label for="email">Email:</label>
-            <input type="email" id="email" required>
-            <label for="password">Senha:</label>
-            <input type="password" id="password" required>
-            <button id="loginButton">Login</button>
-            <p id="errorMessage" class="hidden"></p>
-        </div>
-    </div>
-
     <script src="https://unpkg.com/cropperjs/dist/cropper.js"></script>
     <script>
         document.getElementById('imageInput').addEventListener('change', handleImageUpload);
@@ -324,6 +266,8 @@
         let cropper;
         let resizedCanvas;
         let originalImageData;
+      
+     
 
         function handleImageUpload(event) {
             const reader = new FileReader();
@@ -479,7 +423,7 @@
         }
 
         async function removeBackground() {
-            const apiKey = 'TkMFTCFPPJY63uKdgZRpTaXY';
+            const apiKey = 'GU8CUmqPcQ5NgxH2YxV1dRV9';
             const imageElement = document.getElementById('image');
             const formData = new FormData();
             formData.append('image_file', dataURLtoBlob(imageElement.src));
@@ -1020,85 +964,84 @@
             ];
         }
 
-      function mergeSimilarColors(imageData) {
-    const data = imageData.data;
-    const combinedColors = fixedColorTable.concat(skinTones);
+        function mergeSimilarColors(imageData) {
+            const data = imageData.data;
+            const combinedColors = fixedColorTable.concat(skinTones);
 
-    for (let i = 0; i < data.length; i += 4) {
-        const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
-        const closestColor = findClosestColor(r, g, b, combinedColors);
+            for (let i = 0; i < data.length; i += 4) {
+                const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
+                const closestColor = findClosestColor(r, g, b, combinedColors);
 
-        if (closestColor) {
-            data[i] = closestColor[0];
-            data[i + 1] = closestColor[1];
-            data[i + 2] = closestColor[2];
-        }
-    }
-}
-
-
-        function cleanUpImage(imageData) {
-    const data = imageData.data;
-    const width = imageData.width;
-    const height = imageData.height;
-
-    for (let y = 1; y < height - 1; y++) {
-        for (let x = 1; x < width - 1; x++) {
-            const i = (y * width + x) * 4;
-            const color = [data[i], data[i + 1], data[i + 2]];
-
-            const neighbors = getNeighbors(data, width, height, x, y);
-            const predominantColor = findPredominantColor(neighbors);
-
-            if (colorDistance(color, predominantColor) > 1) {
-                data[i] = predominantColor[0];
-                data[i + 1] = predominantColor[1];
-                data[i + 2] = predominantColor[2];
+                if (closestColor) {
+                    data[i] = closestColor[0];
+                    data[i + 1] = closestColor[1];
+                    data[i + 2] = closestColor[2];
+                }
             }
         }
-    }
-}
+
+        function cleanUpImage(imageData) {
+            const data = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+
+            for (let y = 1; y < height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    const i = (y * width + x) * 4;
+                    const color = [data[i], data[i + 1], data[i + 2]];
+
+                    const neighbors = getNeighbors(data, width, height, x, y);
+                    const predominantColor = findPredominantColor(neighbors);
+
+                    if (colorDistance(color, predominantColor) > 1) {
+                        data[i] = predominantColor[0];
+                        data[i + 1] = predominantColor[1];
+                        data[i + 2] = predominantColor[2];
+                    }
+                }
+            }
+        }
 
         function getNeighbors(data, width, height, x, y) {
-    const neighbors = [];
-    const directions = [
-        [-1, -1], [-1, 0], [-1, 1],
-        [0, -1], [0, 1],
-        [1, -1], [1, 0], [1, 1]
-    ];
+            const neighbors = [];
+            const directions = [
+                [-1, -1], [-1, 0], [-1, 1],
+                [0, -1], [0, 1],
+                [1, -1], [1, 0], [1, 1]
+            ];
 
-    directions.forEach(dir => {
-        const nx = x + dir[0];
-        const ny = y + dir[1];
-        const ni = (ny * width + nx) * 4;
-        neighbors.push([data[ni], data[ni + 1], data[ni + 2]]);
-    });
+            directions.forEach(dir => {
+                const nx = x + dir[0];
+                const ny = y + dir[1];
+                const ni = (ny * width + nx) * 4;
+                neighbors.push([data[ni], data[ni + 1], data[ni + 2]]);
+            });
 
-    return neighbors;
-}
-
-function findPredominantColor(neighbors) {
-    const colorCounts = {};
-    neighbors.forEach(color => {
-        const key = color.join(',');
-        if (colorCounts[key]) {
-            colorCounts[key]++;
-        } else {
-            colorCounts[key] = 1;
+            return neighbors;
         }
-    });
 
-    let predominantColor = null;
-    let maxCount = 0;
-    Object.keys(colorCounts).forEach(key => {
-        if (colorCounts[key] > maxCount) {
-            maxCount = colorCounts[key];
-            predominantColor = key.split(',').map(Number);
+        function findPredominantColor(neighbors) {
+            const colorCounts = {};
+            neighbors.forEach(color => {
+                const key = color.join(',');
+                if (colorCounts[key]) {
+                    colorCounts[key]++;
+                } else {
+                    colorCounts[key] = 1;
+                }
+            });
+
+            let predominantColor = null;
+            let maxCount = 0;
+            Object.keys(colorCounts).forEach(key => {
+                if (colorCounts[key] > maxCount) {
+                    maxCount = colorCounts[key];
+                    predominantColor = key.split(',').map(Number);
+                }
+            });
+
+            return predominantColor;
         }
-    });
-
-    return predominantColor;
-}
 
         function colorDistance(color1, color2) {
             return Math.sqrt(
@@ -1119,41 +1062,6 @@ function findPredominantColor(neighbors) {
             const b = (bigint & 255);
             return [r, g, b];
         }
-document.addEventListener('DOMContentLoaded', function () {
-            const loginModal = document.getElementById('loginModal');
-            const loginButton = document.getElementById('loginButton');
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            const errorMessage = document.getElementById('errorMessage');
-
-            loginModal.style.display = 'block';
-
-            loginButton.addEventListener('click', async function () {
-                const email = emailInput.value;
-                const password = passwordInput.value;
-                try {
-                    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-                    loginModal.style.display = 'none';
-                    document.body.style.pointerEvents = 'auto';
-                    document.body.style.opacity = '1';
-                } catch (error) {
-                    errorMessage.textContent = error.message;
-                    errorMessage.classList.remove('hidden');
-                }
-            });
-
-            firebase.auth().onAuthStateChanged(function (user) {
-                if (user) {
-                    loginModal.style.display = 'none';
-                    document.body.style.pointerEvents = 'auto';
-                    document.body.style.opacity = '1';
-                } else {
-                    loginModal.style.display = 'block';
-                    document.body.style.pointerEvents = 'none';
-                    document.body.style.opacity = '0.5';
-                }
-            });
-        });
     </script>
 
     <script>
@@ -1186,59 +1094,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert('Imprimir página está desativado.');
             }
         });
-
-        if (window.location.protocol === 'file:') {
-            document.addEventListener('DOMContentLoaded', function() {
-                document.body.innerHTML = '<h1>Esta página não pode ser executada localmente.</h1>';
-                document.body.style.color = 'red';
-                document.body.style.textAlign = 'center';
-                document.body.style.paddingTop = '20%';
-                document.body.style.backgroundColor = '#000';
-            });
-        }
-    </script>
-
-    <script>
-       document.addEventListener('contextmenu', function (e) {
-            e.preventDefault();
-            alert('O botão direito do mouse está desativado.');
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if ((e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) ||
-                (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) ||
-                (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) ||
-                (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0))
-            ) {
-                e.preventDefault();
-                alert('A inspeção de elementos está desativada.');
-            }
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
-                e.preventDefault();
-                alert('Salvar a página está desativado.');
-            }
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if ((e.ctrlKey && e.key === 'p') || (e.metaKey && e.key === 'p')) {
-                e.preventDefault();
-                alert('Imprimir página está desativado.');
-            }
-        });
- if (window.location.protocol === 'file:') {
-            document.addEventListener('DOMContentLoaded', function() {
-                // Desativa todo o conteúdo da página
-                document.body.innerHTML = '<h1>Esta página não pode ser executada localmente.</h1>';
-                document.body.style.color = 'red';
-                document.body.style.textAlign = 'center';
-                document.body.style.paddingTop = '20%';
-                document.body.style.backgroundColor = '#000';
-            });
-        }
-
     </script>
 </body>
 
