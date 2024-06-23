@@ -170,6 +170,12 @@
 </head>
 
 <body>
+ <div id="loginContainer" class="container">
+        <h2>Login</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button id="loginButton">Login</button>
+    </div>
     <div class="container">
         <input type="file" id="imageInput" accept="image/*">
         <div id="imageContainer">
@@ -246,6 +252,50 @@
 
     <script src="https://unpkg.com/cropperjs/dist/cropper.js"></script>
     <script>
+ <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCItHl6wfx7ZR7jtz2t9Em2xEPRssMGhnQ",
+  authDomain: "taqueador-49a9d.firebaseapp.com",
+  projectId: "taqueador-49a9d",
+  storageBucket: "taqueador-49a9d.appspot.com",
+  messagingSenderId: "338642082771",
+  appId: "1:338642082771:web:dda5623273e851326ced26",
+  measurementId: "G-T54KW0FNF2"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        const auth = firebase.auth();
+
+        // Handle login
+        document.getElementById('loginButton').addEventListener('click', function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    document.getElementById('loginContainer').classList.add('hidden');
+                    document.getElementById('appContainer').classList.remove('hidden');
+                })
+                .catch((error) => {
+                    alert('Login failed: ' + error.message);
+                });
+        });
+
+        // Handle authentication state changes
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('loginContainer').classList.add('hidden');
+                document.getElementById('appContainer').classList.remove('hidden');
+            } else {
+                document.getElementById('loginContainer').classList.remove('hidden');
+                document.getElementById('appContainer').classList.add('hidden');
+            }
+        });
         document.getElementById('imageInput').addEventListener('change', handleImageUpload);
         document.getElementById('cropButton').addEventListener('click', showCropOptions);
         document.getElementById('resizeButton').addEventListener('click', resizeImage);
@@ -1062,7 +1112,7 @@ function findPredominantColor(neighbors) {
     </script>
 
     <script>
-        document.addEventListener('contextmenu', function (e) {
+       document.addEventListener('contextmenu', function (e) {
             e.preventDefault();
             alert('O botão direito do mouse está desativado.');
         });
@@ -1084,6 +1134,24 @@ function findPredominantColor(neighbors) {
                 alert('Salvar a página está desativado.');
             }
         });
+
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey && e.key === 'p') || (e.metaKey && e.key === 'p')) {
+                e.preventDefault();
+                alert('Imprimir página está desativado.');
+            }
+        });
+ if (window.location.protocol === 'file:') {
+            document.addEventListener('DOMContentLoaded', function() {
+                // Desativa todo o conteúdo da página
+                document.body.innerHTML = '<h1>Esta página não pode ser executada localmente.</h1>';
+                document.body.style.color = 'red';
+                document.body.style.textAlign = 'center';
+                document.body.style.paddingTop = '20%';
+                document.body.style.backgroundColor = '#000';
+            });
+        }
+
     </script>
 </body>
 
