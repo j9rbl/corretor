@@ -6,8 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taquear Imagem</title>
     <link rel="stylesheet" href="https://unpkg.com/cropperjs/dist/cropper.css">
-<script src="https://www.gstatic.com/firebasejs/9.9.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.9.2/firebase-auth-compat.js"></script>
+<!-- Adicione o Firebase SDK aqui -->
+    <script src="https://www.gstatic.com/firebasejs/9.9.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.9.2/firebase-auth-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCItHl6wfx7ZR7jtz2t9Em2xEPRssMGhnQ",
+  authDomain: "taqueador-49a9d.firebaseapp.com",
+  projectId: "taqueador-49a9d",
+  storageBucket: "taqueador-49a9d.appspot.com",
+  messagingSenderId: "338642082771",
+  appId: "1:338642082771:web:dda5623273e851326ced26",
+  measurementId: "G-T54KW0FNF2"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -168,52 +181,42 @@
             height: 100%;
             overflow-y: auto;
         }
- .modal {
-        display: none; /* Hidden by default */
-        position: fixed; /* Stay in place */
-        z-index: 1; /* Sit on top */
-        left: 0;
-        top: 0;
-        width: 100%; /* Full width */
-        height: 100%; /* Full height */
-        overflow: auto; /* Enable scroll if needed */
-        background-color: rgb(0, 0, 0); /* Fallback color */
-        background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
-    }
+/* Estilo do modal de login */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+        }
 
-    .modal-content {
-        background-color: #fefefe;
-        margin: 15% auto; /* 15% from the top and centered */
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%; /* Could be more or less, depending on screen size */
-        max-width: 300px;
-        text-align: center;
-        border-radius: 8px;
-    }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            border-radius: 8px;
+        }
 
-    .hidden {
-        display: none;
-    }
+        .hidden {
+            display: none;
+        }
 
-    #errorMessage {
-        color: red;
-    }
+        #errorMessage {
+            color: red;
+        }
     </style>
 </head>
 
 <body>
-<div id="loginModal" class="modal">
-    <div class="modal-content">
-        <h2>Login</h2>
-        <label for="email">Email:</label>
-        <input type="email" id="email" required>
-        <label for="password">Senha:</label>
-        <input type="password" id="password" required>
-        <button id="loginButton">Login</button>
-        <p id="errorMessage" class="hidden"></p>
-    </div>
-</div>
     <div class="container">
         <input type="file" id="imageInput" accept="image/*">
         <div id="imageContainer">
@@ -285,6 +288,19 @@
                 <div id="allColors" class="palette"></div>
                 <button id="autoColorButton">Auto Colorize</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <h2>Login</h2>
+            <label for="email">Email:</label>
+            <input type="email" id="email" required>
+            <label for="password">Senha:</label>
+            <input type="password" id="password" required>
+            <button id="loginButton">Login</button>
+            <p id="errorMessage" class="hidden"></p>
         </div>
     </div>
 
@@ -1103,6 +1119,83 @@ function findPredominantColor(neighbors) {
             const b = (bigint & 255);
             return [r, g, b];
         }
+document.addEventListener('DOMContentLoaded', function () {
+            const loginModal = document.getElementById('loginModal');
+            const loginButton = document.getElementById('loginButton');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const errorMessage = document.getElementById('errorMessage');
+
+            loginModal.style.display = 'block';
+
+            loginButton.addEventListener('click', async function () {
+                const email = emailInput.value;
+                const password = passwordInput.value;
+                try {
+                    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                    loginModal.style.display = 'none';
+                    document.body.style.pointerEvents = 'auto';
+                    document.body.style.opacity = '1';
+                } catch (error) {
+                    errorMessage.textContent = error.message;
+                    errorMessage.classList.remove('hidden');
+                }
+            });
+
+            firebase.auth().onAuthStateChanged(function (user) {
+                if (user) {
+                    loginModal.style.display = 'none';
+                    document.body.style.pointerEvents = 'auto';
+                    document.body.style.opacity = '1';
+                } else {
+                    loginModal.style.display = 'block';
+                    document.body.style.pointerEvents = 'none';
+                    document.body.style.opacity = '0.5';
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+            alert('O botão direito do mouse está desativado.');
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) ||
+                (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) ||
+                (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) ||
+                (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0))
+            ) {
+                e.preventDefault();
+                alert('A inspeção de elementos está desativada.');
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                alert('Salvar a página está desativado.');
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey && e.key === 'p') || (e.metaKey && e.key === 'p')) {
+                e.preventDefault();
+                alert('Imprimir página está desativado.');
+            }
+        });
+
+        if (window.location.protocol === 'file:') {
+            document.addEventListener('DOMContentLoaded', function() {
+                document.body.innerHTML = '<h1>Esta página não pode ser executada localmente.</h1>';
+                document.body.style.color = 'red';
+                document.body.style.textAlign = 'center';
+                document.body.style.paddingTop = '20%';
+                document.body.style.backgroundColor = '#000';
+            });
+        }
     </script>
 
     <script>
@@ -1145,54 +1238,6 @@ function findPredominantColor(neighbors) {
                 document.body.style.backgroundColor = '#000';
             });
         }
- const firebaseConfig = {
-        apiKey: "SUA_API_KEY",
-        authDomain: "SEU_DOMINIO.firebaseapp.com",
-        projectId: "SEU_PROJECT_ID",
-        storageBucket: "SEU_BUCKET_ID",
-        messagingSenderId: "SEU_SENDER_ID",
-        appId: "SEU_APP_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
-document.addEventListener('DOMContentLoaded', function () {
-        const loginModal = document.getElementById('loginModal');
-        const loginButton = document.getElementById('loginButton');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const errorMessage = document.getElementById('errorMessage');
-
-        loginModal.style.display = 'block';
-
-        loginButton.addEventListener('click', async function () {
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            try {
-                const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-                loginModal.style.display = 'none';
-            } catch (error) {
-                errorMessage.textContent = error.message;
-                errorMessage.classList.remove('hidden');
-            }
-        });
-
-        firebase.auth().onAuthStateChanged(function (user) {
-            if (user) {
-                loginModal.style.display = 'none';
-            } else {
-                loginModal.style.display = 'block';
-            }
-        });
-    });
-firebase.auth().onAuthStateChanged(function (user) {
-    if (user) {
-        loginModal.style.display = 'none';
-    } else {
-        loginModal.style.display = 'block';
-        // Bloquear interações com a aplicação até que o usuário faça login
-        document.body.style.pointerEvents = 'none';
-        document.body.style.opacity = '0.5';
-    }
-});
 
     </script>
 </body>
