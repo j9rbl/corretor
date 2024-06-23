@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mobile Image Editor</title>
     <link rel="stylesheet" href="https://unpkg.com/cropperjs/dist/cropper.css">
-    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -167,6 +166,11 @@
         .controls {
             margin-bottom: 10px;
         }
+
+        #pixelCanvas {
+            width: 100%;
+            height: auto;
+        }
     </style>
 </head>
 
@@ -265,8 +269,6 @@
         let cropper;
         let resizedCanvas;
         let originalImageData;
-
-       
 
         function handleImageUpload(event) {
             const reader = new FileReader();
@@ -526,8 +528,8 @@
             const ctx = canvas.getContext('2d');
             const width = img.width;
             const height = img.height;
-            canvas.width = width * 5;
-            canvas.height = height * 5;
+            canvas.width = width;
+            canvas.height = height;
             ctx.drawImage(img, 0, 0, width, height);
             const imageData = ctx.getImageData(0, 0, width, height);
             currentImageData = imageData;
