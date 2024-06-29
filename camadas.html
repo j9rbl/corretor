@@ -114,6 +114,7 @@
             <input type="range" id="resize-slider" min="10" max="200" value="50" oninput="resizeLayer()">
         </div>
  <button class="tool-btn" onclick="copyEntireProject()">Copiar Projeto Todo</button>
+<button class="tool-btn" onclick="pasteImage()">Colar</button>
     </div>
 
     <script>
@@ -412,6 +413,25 @@ function copyEntireProject() {
         });
     }, 'image/png');
 }
+
+function pasteImage() {
+    navigator.clipboard.read().then(items => {
+        for (let item of items) {
+            if (item.types.includes('image/png')) {
+                item.getType('image/png').then(blob => {
+                    const img = new Image();
+                    img.onload = function () {
+                        addLayer(img);
+                    };
+                    img.src = URL.createObjectURL(blob);
+                });
+            }
+        }
+    }).catch(err => {
+        console.error('Failed to read clipboard contents: ', err);
+    });
+}
+
 
     </script>
 </body>
