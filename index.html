@@ -179,12 +179,16 @@
 
        <div class="container">
         <input type="file" id="imageInput" accept="image/*">
+<button id="startWithCopyButton">Iniciar com Cópia</button>
         <div id="imageContainer">
             <div id="zoomContainer">
                 <img id="image" alt="Selected Image">
+
             </div>
         </div>
         <div class="sidebar">
+
+
             <button id="cropButton">Cortar Imagem</button>
             <div id="cropOptions" class="hidden">
                 <label for="widthInput">Width:</label>
@@ -1199,6 +1203,37 @@ function colorDistance(color1, color2) {
                 alert('Imprimir página está desativado.');
             }
         });
+
+document.getElementById('startWithCopyButton').addEventListener('click', handleStartWithCopy);
+
+async function handleStartWithCopy() {
+    try {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+            if (item.types.includes('image/png') || item.types.includes('image/jpeg')) {
+                const blob = await item.getType(item.types[0]);
+                const img = new Image();
+                img.onload = function () {
+                    const imageContainer = document.getElementById('imageContainer');
+                    const imageElement = document.getElementById('image');
+                    imageElement.src = img.src;
+                    imageElement.style.display = 'block';
+                    imageContainer.style.border = 'none';
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+                    cropper = new Cropper(imageElement, {
+                        aspectRatio: NaN,
+                        viewMode: 1,
+                    });
+                };
+                img.src = URL.createObjectURL(blob);
+            }
+        }
+    } catch (error) {
+        console.error('Falha ao ler da área de transferência: ', error);
+    }
+}
 
     </script>
 </body>
