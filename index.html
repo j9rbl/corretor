@@ -171,11 +171,13 @@
             width: 100%;
             height: auto;
         }
+
     </style>
 </head>
 
 <body>
-    <div class="container">
+
+       <div class="container">
         <input type="file" id="imageInput" accept="image/*">
         <div id="imageContainer">
             <div id="zoomContainer">
@@ -190,6 +192,7 @@
                 <label for="heightInput">Height:</label>
                 <input type="number" id="heightInput" value="200">
                 <button id="resizeButton">Resize</button>
+                <button id="noResizeButton">No Resize</button>
             </div>
             <div id="filterOptions" class="hidden filter-container">
                 <label for="brightnessInput">Brilho:</label>
@@ -205,6 +208,7 @@
                 <button id="removeBgButton">Remover Fundo</button>
                 <button id="pixelateButton">Taquear Imagem</button>
                 <button id="reduceCopyButton">Reduzir e Copiar</button>
+<button id="openLayersButton">Abrir Camadas</button>
             </div>
         </div>
     </div>
@@ -254,6 +258,7 @@
         document.getElementById('imageInput').addEventListener('change', handleImageUpload);
         document.getElementById('cropButton').addEventListener('click', showCropOptions);
         document.getElementById('resizeButton').addEventListener('click', resizeImage);
+        document.getElementById('noResizeButton').addEventListener('click', noResize);
         document.getElementById('brightnessInput').addEventListener('input', applyFilters);
         document.getElementById('contrastInput').addEventListener('input', applyFilters);
         document.getElementById('sharpnessInput').addEventListener('input', applyFilters);
@@ -263,6 +268,10 @@
         document.getElementById('pixelateButton').addEventListener('click', showPixelationSection);
         document.getElementById('reduceCopyButton').addEventListener('click', reduceAndCopyPixelArt);
         document.getElementById('autoColorButton').addEventListener('click', autoColorize);
+document.getElementById('openLayersButton').addEventListener('click', function() {
+    window.open('camadas.html', '_blank');
+});
+
 
         let imageWithoutBackground = null;
         let selectedImage;
@@ -295,91 +304,98 @@
 
         function showCropOptions() {
             document.getElementById('cropOptions').classList.remove('hidden');
-            document.getElementById('cropButton').classList.add('hidden');
-        }
+                    }
 
         function resizeImage() {
-            const width = parseInt(document.getElementById('widthInput').value, 10);
-            const height = parseInt(document.getElementById('heightInput').value, 10);
-            if (cropper) {
-                const canvas = cropper.getCroppedCanvas();
-                resizedCanvas = document.createElement('canvas');
-                resizedCanvas.width = width;
-                resizedCanvas.height = height;
+    const width = parseInt(document.getElementById('widthInput').value, 10);
+    const height = parseInt(document.getElementById('heightInput').value, 10);
+    if (cropper) {
+        const canvas = cropper.getCroppedCanvas();
+        resizedCanvas = document.createElement('canvas');
+        resizedCanvas.width = width;
+        resizedCanvas.height = height;
 
-                const ctx = resizedCanvas.getContext('2d');
-                ctx.imageSmoothingEnabled = false;
+        const ctx = resizedCanvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, resizedCanvas.width, resizedCanvas.height); // Garante que o fundo seja transparente
 
-                ctx.drawImage(canvas, 0, 0, width, height);
+        ctx.drawImage(canvas, 0, 0, width, height);
 
-                originalImageData = ctx.getImageData(0, 0, width, height);
-                const resizedImage = resizedCanvas.toDataURL('image/jpeg', 0.9);
-                const imageElement = document.getElementById('image');
-                imageElement.src = resizedImage;
-                cropper.destroy();
-                imageElement.style.display = 'block';
-                document.getElementById('cropOptions').classList.add('hidden');
-                document.getElementById('filterOptions').classList.remove('hidden');
-            }
-        }
+        originalImageData = ctx.getImageData(0, 0, width, height);
+        const resizedImage = resizedCanvas.toDataURL('image/png'); // Garante que o formato PNG seja usado para manter a transparência
+        const imageElement = document.getElementById('image');
+        imageElement.src = resizedImage;
+        cropper.destroy();
+        imageElement.style.display = 'block';
+        document.getElementById('cropOptions').classList.add('hidden');
+        document.getElementById('filterOptions').classList.remove('hidden');
+    }
+}
+
+
+       function noResize() {
+    const imageElement = document.getElementById('image');
+    cropper.destroy();
+    imageElement.style.display = 'block';
+    document.getElementById('cropOptions').classList.add('hidden');
+    document.getElementById('filterOptions').classList.remove('hidden');
+
+    // Inicializa o resizedCanvas e originalImageData
+    resizedCanvas = document.createElement('canvas');
+    resizedCanvas.width = imageElement.naturalWidth;
+    resizedCanvas.height = imageElement.naturalHeight;
+    const ctx = resizedCanvas.getContext('2d');
+    ctx.drawImage(imageElement, 0, 0, resizedCanvas.width, resizedCanvas.height);
+    originalImageData = ctx.getImageData(0, 0, resizedCanvas.width, resizedCanvas.height);
+}
+
 
         function applyFilters() {
-            if (!resizedCanvas) return;
+    if (!resizedCanvas) return;
 
-            const brightness = parseFloat(document.getElementById('brightnessInput').value);
-            const contrast = parseFloat(document.getElementById('contrastInput').value);
-            const saturation = parseFloat(document.getElementById('saturationInput').value);
-            const sharpness = parseFloat(document.getElementById('sharpnessInput').value);
+    const brightness = parseFloat(document.getElementById('brightnessInput').value);
+    const contrast = parseFloat(document.getElementById('contrastInput').value);
+    const saturation = parseFloat(document.getElementById('saturationInput').value);
+    const sharpness = parseFloat(document.getElementById('sharpnessInput').value);
 
-            const ctx = resizedCanvas.getContext('2d');
-            ctx.putImageData(originalImageData, 0, 0);
-            let imageData = ctx.getImageData(0, 0, resizedCanvas.width, resizedCanvas.height);
-            let data = imageData.data;
+    const ctx = resizedCanvas.getContext('2d');
+    ctx.putImageData(originalImageData, 0, 0);
+    let imageData = ctx.getImageData(0, 0, resizedCanvas.width, resizedCanvas.height);
+    let data = imageData.data;
 
-            for (let i = 0; i < data.length; i += 4) {
-                data[i] = ((data[i] - 128) * contrast + 128) * brightness;
-                data[i + 1] = ((data[i + 1] - 128) * contrast + 128) * brightness;
-                data[i + 2] = ((data[i + 2] - 128) * contrast + 128) * brightness;
-            }
+    for (let i = 0; i < data.length; i += 4) {
+        let r = data[i];
+        let g = data[i + 1];
+        let b = data[i + 2];
+        const a = data[i + 3];
 
-            for (let i = 0; i < data.length; i += 4) {
-                const r = data[i];
-                const g = data[i + 1];
-                const b = data[i + 2];
-                const avg = (r + g + b) / 3;
-                data[i] = avg + (r - avg) * saturation;
-                data[i + 1] = avg + (g - avg) * saturation;
-                data[i + 2] = avg + (b - avg) * saturation;
-            }
+        // Aplica brilho e contraste
+        r = clamp(((r - 128) * contrast + 128) * brightness, 0, 255);
+        g = clamp(((g - 128) * contrast + 128) * brightness, 0, 255);
+        b = clamp(((b - 128) * contrast + 128) * brightness, 0, 255);
 
-            ctx.putImageData(imageData, 0, 0);
+        // Aplica saturação
+        const avg = (r + g + b) / 3;
+        r = avg + (r - avg) * saturation;
+        g = avg + (g - avg) * saturation;
+        b = avg + (b - avg) * saturation;
 
-            if (sharpness !== 0) {
-                applySharpness(ctx, resizedCanvas.width, resizedCanvas.height, sharpness);
-            }
+        data[i] = r;
+        data[i + 1] = g;
+        data[i + 2] = b;
+        data[i + 3] = a; // Preserva o canal alfa para manter a transparência
+    }
 
-            const updatedImage = resizedCanvas.toDataURL('image/jpeg', 0.9);
-            document.getElementById('image').src = updatedImage;
+    ctx.putImageData(imageData, 0, 0);
 
-            if (imageWithoutBackground) {
-                const canvas = document.createElement('canvas');
-                canvas.width = resizedCanvas.width;
-                canvas.height = resizedCanvas.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(resizedCanvas, 0, 0);
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageData.data;
+    if (sharpness !== 0) {
+        applySharpness(ctx, resizedCanvas.width, resizedCanvas.height, sharpness);
+    }
 
-                for (let i = 0; i < data.length; i += 4) {
-                    if (imageWithoutBackground.data[i + 3] === 0) {
-                        data[i + 3] = 0;
-                    }
-                }
+    const updatedImage = resizedCanvas.toDataURL('image/png');
+    document.getElementById('image').src = updatedImage;
+}
 
-                ctx.putImageData(imageData, 0, 0);
-                document.getElementById('image').src = canvas.toDataURL('image/png');
-            }
-        }
 
         function applySharpness(ctx, width, height, sharpness) {
             let imageData = ctx.getImageData(0, 0, width, height);
@@ -680,19 +696,20 @@
             }
         }
 
-        function findClosestColor(r, g, b, colorTable) {
-            let minDistance = Infinity;
-            let closestColor = null;
-            colorTable.forEach(hex => {
-                const [red, green, blue] = hexToRgb(hex);
-                const distance = Math.sqrt((r - red) ** 2 + (g - green) ** 2 + (b - blue) ** 2);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestColor = [red, green, blue];
-                }
-            });
-            return closestColor;
+       function findClosestColor(r, g, b, colorTable) {
+    let minDistance = Infinity;
+    let closestColor = null;
+    colorTable.forEach(hex => {
+        const [red, green, blue] = hexToRgb(hex);
+        const distance = Math.sqrt((r - red) ** 2 + (g - green) ** 2 + (b - blue) ** 2);
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestColor = [red, green, blue];
         }
+    });
+    return closestColor;
+}
+
 
         function rgbToHex(r, g, b) {
             return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
@@ -835,49 +852,136 @@
             });
         }
 
-        function drawPixelatedImage(imageData) {
-            const canvas = document.getElementById('pixelCanvas');
-            const ctx = canvas.getContext('2d');
-            const width = imageData.width;
-            const height = imageData.height;
-            const pixelSize = 5;
-            canvas.width = width * pixelSize;
-            canvas.height = height * pixelSize;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+   function drawPixelatedImage(imageData) {
+    const canvas = document.getElementById('pixelCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = imageData.width;
+    const height = imageData.height;
+    const pixelSize = 5;  // Ou outro tamanho conforme necessário
+    canvas.width = width * pixelSize;
+    canvas.height = height * pixelSize;
+    ctx.imageSmoothingEnabled = false;  // Desativa a suavização
 
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const i = (y * width + x) * 4;
-                    const r = imageData.data[i];
-                    const g = imageData.data[i + 1];
-                    const b = imageData.data[i + 2];
-                    const a = imageData.data[i + 3] / 255;
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const i = (y * width + x) * 4;
+            const r = imageData.data[i];
+            const g = imageData.data[i + 1];
+            const b = imageData.data[i + 2];
+            const a = imageData.data[i + 3] / 255; // Valor do alpha
 
-                    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
-                    ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+            if (a === 0) {
+                ctx.clearRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+            } else {
+                let closestColor = findClosestColor(r, g, b, fixedColorTable);
+
+                if (isEdgePixel(x, y, imageData)) {
+                    const predominantColor = findPredominantColor(getNeighbors(imageData, x, y));
+                    closestColor = predominantColor || closestColor;
                 }
+
+                ctx.fillStyle = `rgb(${closestColor[0]}, ${closestColor[1]}, ${closestColor[2]})`;
+                ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
             }
         }
+    }
+}
+
+function isEdgePixel(x, y, imageData) {
+    const width = imageData.width;
+    const height = imageData.height;
+    const neighbors = getNeighbors(imageData, x, y);
+    const currentColor = [imageData.data[(y * width + x) * 4], imageData.data[(y * width + x) * 4 + 1], imageData.data[(y * width + x) * 4 + 2]];
+
+    let edgePixel = false;
+    neighbors.forEach(neighbor => {
+        if (neighbor[3] === 0 || colorDistance(currentColor, neighbor) > 50) { // Limiar para distância de cor
+            edgePixel = true;
+        }
+    });
+
+    return edgePixel;
+}
+
+function getNeighbors(imageData, x, y) {
+    const width = imageData.width;
+    const height = imageData.height;
+    const neighbors = [];
+    const offsets = [-1, 0, 1];
+
+    offsets.forEach(offsetY => {
+        offsets.forEach(offsetX => {
+            if (offsetX === 0 && offsetY === 0) return; // Ignora o pixel atual
+            const nx = x + offsetX;
+            const ny = y + offsetY;
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                const ni = (ny * width + nx) * 4;
+                neighbors.push([
+                    imageData.data[ni],
+                    imageData.data[ni + 1],
+                    imageData.data[ni + 2],
+                    imageData.data[ni + 3] / 255
+                ]);
+            }
+        });
+    });
+
+    return neighbors;
+}
+
+function findPredominantColor(neighbors) {
+    const colorCounts = {};
+    neighbors.forEach(color => {
+        const key = color.slice(0, 3).join(',');
+        if (colorCounts[key]) {
+            colorCounts[key]++;
+        } else {
+            colorCounts[key] = 1;
+        }
+    });
+
+    let predominantColor = null;
+    let maxCount = 0;
+    Object.keys(colorCounts).forEach(key => {
+        if (colorCounts[key] > maxCount) {
+            maxCount = colorCounts[key];
+            predominantColor = key.split(',').map(Number);
+        }
+    });
+
+    return predominantColor;
+}
+
+function colorDistance(color1, color2) {
+    return Math.sqrt(
+        (color1[0] - color2[0]) ** 2 +
+        (color1[1] - color2[1]) ** 2 +
+        (color1[2] - color2[2]) ** 2
+    );
+}
+
 
         function reduceAndCopyPixelArt() {
-            const pixelCanvas = document.getElementById('pixelCanvas');
-            const reducedCanvas = document.createElement('canvas');
-            reducedCanvas.width = pixelCanvas.width / 5;
-            reducedCanvas.height = pixelCanvas.height / 5;
-            const ctx = reducedCanvas.getContext('2d');
+    const pixelCanvas = document.getElementById('pixelCanvas');
+    const reducedCanvas = document.createElement('canvas');
+    reducedCanvas.width = pixelCanvas.width / 5;
+    reducedCanvas.height = pixelCanvas.height / 5;
+    const ctx = reducedCanvas.getContext('2d');
 
-            ctx.imageSmoothingEnabled = false;
-            ctx.fillStyle = '#963295';
-            ctx.fillRect(0, 0, reducedCanvas.width, reducedCanvas.height);
+    ctx.imageSmoothingEnabled = false;
 
-            ctx.drawImage(pixelCanvas, 0, 0, reducedCanvas.width, reducedCanvas.height);
-            reducedCanvas.toBlob(blob => {
-                const item = new ClipboardItem({ "image/png": blob });
-                navigator.clipboard.write([item]).then(() => {
-                    flashButton();
-                });
-            });
-        }
+    // Desenhar a imagem reduzida no canvas, mantendo o fundo transparente
+    ctx.drawImage(pixelCanvas, 0, 0, reducedCanvas.width, reducedCanvas.height);
+
+    // Copiar o canvas reduzido para a área de transferência como PNG para manter a transparência
+    reducedCanvas.toBlob(blob => {
+        const item = new ClipboardItem({ "image/png": blob });
+        navigator.clipboard.write([item]).then(() => {
+            console.log('Imagem copiada para a área de transferência');
+            flashButton();
+        });
+    }, 'image/png');
+}
 
         function flashButton() {
             const button = document.getElementById('reduceCopyButton');
@@ -1095,6 +1199,7 @@
                 alert('Imprimir página está desativado.');
             }
         });
+
     </script>
 </body>
 
