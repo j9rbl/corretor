@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Photoshop App</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #workspace {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+            position: relative;
+        }
+        #canvas-container {
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        #canvas {
+            background: transparent;
+            border: 1px solid #ccc;
+            image-rendering: pixelated; /* Para garantir qualidade ao redimensionar pixel art */
+        }
+        #layers {
+            width: 200px;
+            background: #f8f8f8;
+            border-left: 1px solid #ccc;
+            padding: 10px;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .layer {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .layer .delete-btn {
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .selected {
+            border-color: blue;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .tool-btn {
+            margin: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #resize-slider {
+            display: none;
+            width: 100px;
+        }
+        .drag-handle {
+            cursor: move;
+        }
+    </style>
+</head>
+<body>
+    <div id="workspace">
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+    </div>
+    <div id="layers">
+        <h3>Camadas</h3>
+        <div id="layer-list"></div>
+    </div>
+    <div id="controls">
+        <h3>Defina o Tamanho do Projeto</h3>
+        <label for="width">Largura:</label>
+        <input type="number" id="width" min="1"><br><br>
+        <label for="height">Altura:</label>
+        <input type="number" id="height" min="1"><br><br>
+        <button onclick="createWorkspace()">Criar</button>
+        <div>
+            <button class="tool-btn" onclick="activateResizeTool()">Ferramenta de Redimensionamento</button>
+            <input type="range" id="resize-slider" min="10" max="200" value="50" oninput="resizeLayer()">
+        </div>
+ <button class="tool-btn" onclick="copyEntireProject()">Copiar Projeto Todo</button>
+    </div>
+
+    <script>
+        let canvas, ctx, scale = 1;
+        let layers = [];
+        let selectedLayer = null;
+        let offsetX, offsetY, startX, startY;
+        let isDragging = false;
+        let isSelectingAll = false;
+        let canvasWidth, canvasHeight;
+
+        function createWorkspace() {
+            canvasWidth = document.getElementById('width').value;
+            canvasHeight = document.getElementById('height').value;
+            
+            if (canvasWidth > 0 && canvasHeight > 0) {
+                canvas = document.getElementById('canvas');
+                canvas.width = canvasWidth;
+                canvas.height = canvasHeight;
+                ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = false; // Desativar suavização de imagem para pixel art
+                canvas.style.background = 'transparent';
+
+                addLayer();
+
+                document.getElementById('workspace').addEventListener('wheel', zoom, { passive: false });
+                canvas.addEventListener('mousedown', startDragging);
+                canvas.addEventListener('mousemove', drag);
+                canvas.addEventListener('mouseup', stopDragging);
+                document.addEventListener('paste', pasteImage);
+                document.addEventListener('keydown', handleKeyDown);
+                initializeDragAndDrop();
+            } else {
+                alert('Por favor, insira valores válidos.');
+            }
+        }
+
+        function zoom(event) {
+            event.preventDefault();
+            const canvasContainer = document.getElementById('canvas-container');
+            const scaleAmount = 0.1;
+            const direction = event.deltaY > 0 ? -1 : 1;
+
+            const prevScale = scale;
+            scale *= (1 + scaleAmount * direction);
+
+            canvasContainer.style.transform = `scale(${scale})`;
+            canvasContainer.style.transformOrigin = 'center center';
+
+            redrawLayers(); // Redesenhar camadas após aplicar o zoom
+        }
+
+        function addLayer(image = null) {
+            const layer = {
+                id: layers.length,
+                image: image,
+                x: 0,
+                y: 0,
+                width: image ? image.width : 0,
+                height: image ? image.height : 0
+            };
+            layers.push(layer);
+            selectLayer(layer.id); // Selecionar automaticamente a nova camada
+            renderLayerList();
+            if (image) {
+                drawLayer(layer);
+            }
+        }
+
+        function renderLayerList() {
+            const layerList = document.getElementById('layer-list');
+            layerList.innerHTML = '';
+            layers.forEach(layer => {
+                const div = document.createElement('div');
+                div.className = 'layer';
+                div.draggable = true;
+                div.dataset.id = layer.id;
+                div.innerHTML = `<span class="drag-handle">☰</span> Camada ${layer.id + 1} <button class="delete-btn" onclick="deleteLayer(${layer.id})">×</button>`;
+                div.onclick = () => selectLayer(layer.id);
+                if (selectedLayer === layer.id) {
+                    div.classList.add('selected');
+                }
+                layerList.appendChild(div);
+            });
+        }
+
+        function selectLayer(id) {
+            selectedLayer = id;
+            renderLayerList();
+        }
+
+        function deleteLayer(id) {
+            layers = layers.filter(layer => layer.id !== id);
+            if (selectedLayer === id) {
+                selectedLayer = null;
+            }
+            renderLayerList();
+            redrawLayers();
+        }
+
+        function startDragging(event) {
+            if (selectedLayer !== null) {
+                const layer = layers[selectedLayer];
+                offsetX = event.offsetX - layer.x;
+                offsetY = event.offsetY - layer.y;
+                startX = event.offsetX;
+                startY = event.offsetY;
+                isDragging = true;
+                canvas.style.cursor = 'grabbing';
+            }
+        }
+
+        function drag(event) {
+            if (isDragging && selectedLayer !== null) {
+                const layer = layers[selectedLayer];
+                layer.x = (event.offsetX - offsetX);
+                layer.y = (event.offsetY - offsetY);
+                redrawLayers();
+            }
+        }
+
+        function stopDragging() {
+            isDragging = false;
+            canvas.style.cursor = 'default';
+        }
+
+        function redrawLayers() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            layers.forEach(layer => {
+                if (layer.image) {
+                    ctx.imageSmoothingEnabled = false; // Desativar suavização de imagem para cada camada
+                    ctx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
+                }
+            });
+        }
+
+        function pasteImage(event) {
+            const items = event.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+                    const blob = items[i].getAsFile();
+                    const img = new Image();
+                    img.onload = function () {
+                        addLayer(img);
+                    }
+                    img.src = URL.createObjectURL(blob);
+                }
+            }
+        }
+
+        function drawLayer(layer) {
+            ctx.imageSmoothingEnabled = false; // Desativar suavização de imagem para cada camada
+            ctx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
+        }
+
+        function handleKeyDown(event) {
+            if (event.ctrlKey && event.key === 't') {
+                if (selectedLayer !== null) {
+                    activateResizeTool();
+                }
+            }
+            if (event.ctrlKey && event.key === 'a') {
+                event.preventDefault();
+                selectAll();
+            }
+            if (event.ctrlKey && event.key === 'x') {
+                event.preventDefault();
+                cutLayer();
+            }
+        }
+
+        function activateResizeTool() {
+            if (selectedLayer !== null) {
+                const resizeSlider = document.getElementById('resize-slider');
+                resizeSlider.style.display = 'block';
+                resizeSlider.value = 100; // Redefinir o valor do slider para 100 (sem alteração de tamanho)
+            }
+        }
+
+        function resizeLayer() {
+            if (selectedLayer !== null) {
+                const layer = layers[selectedLayer];
+                const resizeSlider = document.getElementById('resize-slider');
+                const scaleFactor = resizeSlider.value / 100;
+
+                layer.width = layer.image.width * scaleFactor;
+                layer.height = layer.image.height * scaleFactor;
+
+                redrawLayers();
+            }
+        }
+
+        function selectAll() {
+            isSelectingAll = true;
+        }
+
+    function cutLayer() {
+    if (selectedLayer !== null && isSelectingAll) {
+        const layer = layers[selectedLayer];
+        
+        // Criar um novo canvas temporário que será o destino do recorte
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        const scaleX = layer.image.width / layer.width;
+        const scaleY = layer.image.height / layer.height;
+
+        // As dimensões do canvas temporário devem ser as da camada atual visível
+        const visibleWidth = Math.min(canvasWidth, layer.width);
+        const visibleHeight = Math.min(canvasHeight, layer.height);
+        tempCanvas.width = visibleWidth;
+        tempCanvas.height = visibleHeight;
+
+        // O ponto inicial de recorte deve considerar a transformação de escala
+        const clipX = Math.max(0, -layer.x * scaleX);
+        const clipY = Math.max(0, -layer.y * scaleY);
+
+        // Desenhar a imagem no canvas temporário, considerando a escala e a posição
+        tempCtx.drawImage(layer.image, clipX, clipY, visibleWidth * scaleX, visibleHeight * scaleY, 0, 0, visibleWidth, visibleHeight);
+
+        // Copiar a área recortada para a área de transferência
+        tempCanvas.toBlob(blob => {
+            const item = new ClipboardItem({ 'image/png': blob });
+            navigator.clipboard.write([item]).then(() => {
+                console.log('Imagem copiada para a área de transferência');
+            }).catch(err => {
+                console.error('Erro ao copiar a imagem para a área de transferência', err);
+            });
+        }, 'image/png');
+
+        // Remover a recolagem automática removendo a atualização da imagem da camada
+        // Você pode querer tratar aqui a remoção da camada ou sua ocultação, dependendo do seu caso de uso
+        if (visibleWidth > 0 && visibleHeight > 0) {
+            deleteLayer(selectedLayer);
+        }
+
+        isSelectingAll = false;
+    }
+}
+
+
+
+
+        function initializeDragAndDrop() {
+            const layerList = document.getElementById('layer-list');
+
+            layerList.addEventListener('dragstart', (event) => {
+                event.dataTransfer.setData('text/plain', event.target.dataset.id);
+                event.target.classList.add('dragging');
+            });
+
+            layerList.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                const draggingElement = document.querySelector('.dragging');
+                const elements = Array.from(layerList.children);
+                const currentElement = elements.find((element) => {
+                    return element !== draggingElement && 
+                           event.clientY < element.getBoundingClientRect().top + element.clientHeight / 2;
+                });
+                if (currentElement) {
+                    layerList.insertBefore(draggingElement, currentElement);
+                } else {
+                    layerList.appendChild(draggingElement);
+                }
+            });
+
+            layerList.addEventListener('dragend', (event) => {
+                event.target.classList.remove('dragging');
+                const newOrder = Array.from(layerList.children).map(element => Number(element.dataset.id));
+                layers = newOrder.map(id => layers.find(layer => layer.id === id));
+                renderLayerList();
+                redrawLayers();
+            });
+        }
+
+function copyEntireProject() {
+    // Criar um novo canvas temporário
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+
+    // Desenhar todas as camadas no canvas temporário
+    layers.forEach(layer => {
+        if (layer.image) { // Certifique-se de que a camada tenha uma imagem carregada
+            tempCtx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
+        }
+    });
+
+    // Copiar a imagem resultante para a área de transferência
+    tempCanvas.toBlob(blob => {
+        const item = new ClipboardItem({ "image/png": blob });
+        navigator.clipboard.write([item]).then(() => {
+            console.log('Projeto copiado para a área de transferência.');
+        }).catch(err => {
+            console.error('Erro ao copiar o projeto para a área de transferência:', err);
+        });
+    }, 'image/png');
+}
+
+    </script>
+</body>
+</html>
