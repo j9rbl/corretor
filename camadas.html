@@ -403,12 +403,8 @@ function adjustLayerPositions() {
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
 
-        // Desenhar todas as camadas no canvas temporário
-        layers.forEach(layer => {
-            if (layer.image) { // Certifique-se de que a camada tenha uma imagem carregada
-                tempCtx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
-            }
-        });
+        // Desenhar a camada selecionada no canvas temporário
+        tempCtx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
 
         // Copiar a área recortada para a área de transferência
         tempCanvas.toBlob(blob => {
@@ -422,7 +418,6 @@ function adjustLayerPositions() {
 
         // Remover a camada cortada
         deleteLayer(selectedLayer);
-        isSelectingAll = false;
     }
 }
 
