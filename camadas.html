@@ -48,7 +48,7 @@
     height: 50px;
     background: #2e2e2e; /* Cor de fundo da área de camadas */
     border-top: 1px solid #555; /* Cor da borda superior */
-    padding: 10px;
+    padding: 1px;
     box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
     position: relative;
     display: flex;
@@ -214,11 +214,14 @@ function resetWorkspace() {
 function zoom(event) {
     event.preventDefault();
     const canvasContainer = document.getElementById('canvas-container');
-    const scaleAmount = 0.5;
+    const scaleAmount = 0.2; // Aumenta a quantidade de escala por rotação
     const direction = event.deltaY > 0 ? -1 : 1;
 
     const prevScale = scale;
     scale *= (1 + scaleAmount * direction);
+
+    // Limitar a escala para evitar zoom muito grande ou muito pequeno
+    scale = Math.max(0.05, Math.min(5, scale));
 
     canvasContainer.style.transform = `scale(${scale})`;
     canvasContainer.style.transformOrigin = 'center center';
@@ -504,10 +507,11 @@ function pasteImage() {
 function adjustZoom() {
     const zoomLevel = document.getElementById('zoom-slider').value;
     const canvasContainer = document.getElementById('canvas-container');
+    scale = zoomLevel; // Atualizar a escala global
     canvasContainer.style.transform = `scale(${zoomLevel})`;
     canvasContainer.style.transformOrigin = 'center center';
+    redrawLayers();
 }
-
 function flipLayer() {
     if (selectedLayer !== null) {
         const layer = layers.find(l => l.id === selectedLayer);
