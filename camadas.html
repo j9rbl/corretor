@@ -48,7 +48,7 @@
     height: 50px;
     background: #2e2e2e; /* Cor de fundo da área de camadas */
     border-top: 1px solid #555; /* Cor da borda superior */
-    padding: -10px;
+    padding: 1px;
     box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
     position: relative;
     display: flex;
@@ -214,7 +214,7 @@ function resetWorkspace() {
 function zoom(event) {
     event.preventDefault();
     const canvasContainer = document.getElementById('canvas-container');
-    const scaleAmount = 0.2;
+    const scaleAmount = 0.5;
     const direction = event.deltaY > 0 ? -1 : 1;
 
     const prevScale = scale;
