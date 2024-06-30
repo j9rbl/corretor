@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <link rel="shortcut icon" href="favicon.png">
     <meta charset="UTF-8">
@@ -19,7 +18,6 @@
             background-color: #2c2c2c;
             color: #fff;
         }
-
         .container {
             width: 100%;
             max-width: 600px;
@@ -32,7 +30,6 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
             overflow: hidden;
         }
-
         #imageContainer {
             width: 100%;
             max-width: 600px;
@@ -46,13 +43,11 @@
             overflow: hidden;
             position: relative;
         }
-
         #image {
             max-width: 100%;
             max-height: 100%;
             display: none;
         }
-
         .sidebar {
             display: flex;
             flex-direction: column;
@@ -64,7 +59,6 @@
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
             margin-bottom: 10px;
         }
-
         button,
         input[type=range],
         input[type=number] {
@@ -77,17 +71,14 @@
             color: #fff;
             width: 100%;
         }
-
         button:hover,
         input[type=range]:hover,
         input[type=number]:hover {
             background-color: #6c6c6c;
         }
-
         .hidden {
             display: none;
         }
-
         #zoomContainer {
             position: absolute;
             width: 100%;
@@ -100,31 +91,25 @@
             transform-origin: center;
             transition: transform 0.2s ease;
         }
-
         .filter-container {
             display: flex;
             flex-direction: column;
         }
-
         label {
             margin-top: 10px;
         }
-
         #removeBgButton {
             background-color: #007BFF;
             color: #fff;
         }
-
         #removeBgButton:hover {
             background-color: #0056b3;
         }
-
         .palette {
             display: flex;
             flex-wrap: wrap;
             margin-top: 10px;
         }
-
         .colorBox {
             width: 20px;
             height: 20px;
@@ -132,26 +117,22 @@
             cursor: pointer;
             border: 1px solid #000;
         }
-
         #menuInferior {
             display: flex;
             justify-content: space-around;
             width: 100%;
         }
-
         #pixelationSection {
             display: flex;
             align-items: flex-start;
             width: 100%;
             flex-direction: column;
         }
-
         #container {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-
         #sideMenu {
             display: flex;
             flex-direction: column;
@@ -162,33 +143,25 @@
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
             width: 100%;
         }
-
         .controls {
             margin-bottom: 10px;
         }
-
         #pixelCanvas {
             width: 100%;
             height: auto;
         }
-
     </style>
 </head>
-
 <body>
-
-       <div class="container">
+    <div class="container">
         <input type="file" id="imageInput" accept="image/*">
-<button id="startWithCopyButton">Iniciar com Cópia</button>
+        <button id="startWithCopyButton">Iniciar com Cópia</button>
         <div id="imageContainer">
             <div id="zoomContainer">
                 <img id="image" alt="Selected Image">
-
             </div>
         </div>
         <div class="sidebar">
-
-
             <button id="cropButton">Cortar Imagem</button>
             <div id="cropOptions" class="hidden">
                 <label for="widthInput">Width:</label>
@@ -212,11 +185,10 @@
                 <button id="removeBgButton">Remover Fundo</button>
                 <button id="pixelateButton">Taquear Imagem</button>
                 <button id="reduceCopyButton">Reduzir e Copiar</button>
-<button id="openLayersButton">Abrir Camadas</button>
+                <button id="openLayersButton">Abrir Camadas</button>
             </div>
         </div>
     </div>
-
     <div id="pixelationSection" class="hidden">
         <div id="container">
             <div id="pixelContainer">
@@ -256,7 +228,6 @@
             </div>
         </div>
     </div>
-
     <script src="https://unpkg.com/cropperjs/dist/cropper.js"></script>
     <script>
         document.getElementById('imageInput').addEventListener('change', handleImageUpload);
@@ -272,10 +243,9 @@
         document.getElementById('pixelateButton').addEventListener('click', showPixelationSection);
         document.getElementById('reduceCopyButton').addEventListener('click', reduceAndCopyPixelArt);
         document.getElementById('autoColorButton').addEventListener('click', autoColorize);
-document.getElementById('openLayersButton').addEventListener('click', function() {
-    window.open('camadas.html', '_blank');
-});
-
+        document.getElementById('openLayersButton').addEventListener('click', function() {
+            window.open('camadas.html', '_blank');
+        });
 
         let imageWithoutBackground = null;
         let selectedImage;
@@ -308,103 +278,94 @@ document.getElementById('openLayersButton').addEventListener('click', function()
 
         function showCropOptions() {
             document.getElementById('cropOptions').classList.remove('hidden');
-                    }
+        }
 
         function resizeImage() {
-    const width = parseInt(document.getElementById('widthInput').value, 10);
-    const height = parseInt(document.getElementById('heightInput').value, 10);
-    if (cropper) {
-        const canvas = cropper.getCroppedCanvas();
-        resizedCanvas = document.createElement('canvas');
-        resizedCanvas.width = width;
-        resizedCanvas.height = height;
+            const width = parseInt(document.getElementById('widthInput').value, 10);
+            const height = parseInt(document.getElementById('heightInput').value, 10);
+            if (cropper) {
+                const canvas = cropper.getCroppedCanvas();
+                resizedCanvas = document.createElement('canvas');
+                resizedCanvas.width = width;
+                resizedCanvas.height = height;
+                const ctx = resizedCanvas.getContext('2d');
+                ctx.imageSmoothingEnabled = false;
+                ctx.clearRect(0, 0, resizedCanvas.width, resizedCanvas.height); // Garante que o fundo seja transparente
+                ctx.drawImage(canvas, 0, 0, width, height);
+                originalImageData = ctx.getImageData(0, 0, width, height);
+                const resizedImage = resizedCanvas.toDataURL('image/png'); // Garante que o formato PNG seja usado para manter a transparência
+                const imageElement = document.getElementById('image');
+                imageElement.src = resizedImage;
+                cropper.destroy();
+                imageElement.style.display = 'block';
+                document.getElementById('cropOptions').classList.add('hidden');
+                document.getElementById('filterOptions').classList.remove('hidden');
+            }
+        }
 
-        const ctx = resizedCanvas.getContext('2d');
-        ctx.imageSmoothingEnabled = false;
-        ctx.clearRect(0, 0, resizedCanvas.width, resizedCanvas.height); // Garante que o fundo seja transparente
+        function noResize() {
+            const imageElement = document.getElementById('image');
+            cropper.destroy();
+            imageElement.style.display = 'block';
+            document.getElementById('cropOptions').classList.add('hidden');
+            document.getElementById('filterOptions').classList.remove('hidden');
 
-        ctx.drawImage(canvas, 0, 0, width, height);
-
-        originalImageData = ctx.getImageData(0, 0, width, height);
-        const resizedImage = resizedCanvas.toDataURL('image/png'); // Garante que o formato PNG seja usado para manter a transparência
-        const imageElement = document.getElementById('image');
-        imageElement.src = resizedImage;
-        cropper.destroy();
-        imageElement.style.display = 'block';
-        document.getElementById('cropOptions').classList.add('hidden');
-        document.getElementById('filterOptions').classList.remove('hidden');
-    }
-}
-
-
-       function noResize() {
-    const imageElement = document.getElementById('image');
-    cropper.destroy();
-    imageElement.style.display = 'block';
-    document.getElementById('cropOptions').classList.add('hidden');
-    document.getElementById('filterOptions').classList.remove('hidden');
-
-    // Inicializa o resizedCanvas e originalImageData
-    resizedCanvas = document.createElement('canvas');
-    resizedCanvas.width = imageElement.naturalWidth;
-    resizedCanvas.height = imageElement.naturalHeight;
-    const ctx = resizedCanvas.getContext('2d');
-    ctx.drawImage(imageElement, 0, 0, resizedCanvas.width, resizedCanvas.height);
-    originalImageData = ctx.getImageData(0, 0, resizedCanvas.width, resizedCanvas.height);
-}
-
+            // Inicializa o resizedCanvas e originalImageData
+            resizedCanvas = document.createElement('canvas');
+            resizedCanvas.width = imageElement.naturalWidth;
+            resizedCanvas.height = imageElement.naturalHeight;
+            const ctx = resizedCanvas.getContext('2d');
+            ctx.drawImage(imageElement, 0, 0, resizedCanvas.width, resizedCanvas.height);
+            originalImageData = ctx.getImageData(0, 0, resizedCanvas.width, resizedCanvas.height);
+        }
 
         function applyFilters() {
-    if (!resizedCanvas) return;
+            if (!resizedCanvas) return;
+            const brightness = parseFloat(document.getElementById('brightnessInput').value);
+            const contrast = parseFloat(document.getElementById('contrastInput').value);
+            const saturation = parseFloat(document.getElementById('saturationInput').value);
+            const sharpness = parseFloat(document.getElementById('sharpnessInput').value);
+            const ctx = resizedCanvas.getContext('2d');
+            ctx.putImageData(originalImageData, 0, 0);
+            let imageData = ctx.getImageData(0, 0, resizedCanvas.width, resizedCanvas.height);
+            let data = imageData.data;
 
-    const brightness = parseFloat(document.getElementById('brightnessInput').value);
-    const contrast = parseFloat(document.getElementById('contrastInput').value);
-    const saturation = parseFloat(document.getElementById('saturationInput').value);
-    const sharpness = parseFloat(document.getElementById('sharpnessInput').value);
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i];
+                let g = data[i + 1];
+                let b = data[i + 2];
+                const a = data[i + 3];
 
-    const ctx = resizedCanvas.getContext('2d');
-    ctx.putImageData(originalImageData, 0, 0);
-    let imageData = ctx.getImageData(0, 0, resizedCanvas.width, resizedCanvas.height);
-    let data = imageData.data;
+                // Aplica brilho e contraste
+                r = clamp(((r - 128) * contrast + 128) * brightness, 0, 255);
+                g = clamp(((g - 128) * contrast + 128) * brightness, 0, 255);
+                b = clamp(((b - 128) * contrast + 128) * brightness, 0, 255);
 
-    for (let i = 0; i < data.length; i += 4) {
-        let r = data[i];
-        let g = data[i + 1];
-        let b = data[i + 2];
-        const a = data[i + 3];
+                // Aplica saturação
+                const avg = (r + g + b) / 3;
+                r = avg + (r - avg) * saturation;
+                g = avg + (g - avg) * saturation;
+                b = avg + (b - avg) * saturation;
 
-        // Aplica brilho e contraste
-        r = clamp(((r - 128) * contrast + 128) * brightness, 0, 255);
-        g = clamp(((g - 128) * contrast + 128) * brightness, 0, 255);
-        b = clamp(((b - 128) * contrast + 128) * brightness, 0, 255);
+                data[i] = r;
+                data[i + 1] = g;
+                data[i + 2] = b;
+                data[i + 3] = a; // Preserva o canal alfa para manter a transparência
+            }
 
-        // Aplica saturação
-        const avg = (r + g + b) / 3;
-        r = avg + (r - avg) * saturation;
-        g = avg + (g - avg) * saturation;
-        b = avg + (b - avg) * saturation;
+            ctx.putImageData(imageData, 0, 0);
 
-        data[i] = r;
-        data[i + 1] = g;
-        data[i + 2] = b;
-        data[i + 3] = a; // Preserva o canal alfa para manter a transparência
-    }
+            if (sharpness !== 0) {
+                applySharpness(ctx, resizedCanvas.width, resizedCanvas.height, sharpness);
+            }
 
-    ctx.putImageData(imageData, 0, 0);
-
-    if (sharpness !== 0) {
-        applySharpness(ctx, resizedCanvas.width, resizedCanvas.height, sharpness);
-    }
-
-    const updatedImage = resizedCanvas.toDataURL('image/png');
-    document.getElementById('image').src = updatedImage;
-}
-
+            const updatedImage = resizedCanvas.toDataURL('image/png');
+            document.getElementById('image').src = updatedImage;
+        }
 
         function applySharpness(ctx, width, height, sharpness) {
             let imageData = ctx.getImageData(0, 0, width, height);
             let data = imageData.data;
-
             const sharpenMatrix = [
                 0, -1, 0,
                 -1, 5, -1,
@@ -467,6 +428,12 @@ document.getElementById('openLayersButton').addEventListener('click', function()
                 const resultUrl = URL.createObjectURL(resultBlob);
                 imageElement.src = resultUrl;
                 imageWithoutBackground = await blobToImageData(resultBlob);
+                originalImageData = imageWithoutBackground;
+                resizedCanvas = document.createElement('canvas');
+                resizedCanvas.width = imageWithoutBackground.width;
+                resizedCanvas.height = imageWithoutBackground.height;
+                const ctx = resizedCanvas.getContext('2d');
+                ctx.putImageData(imageWithoutBackground, 0, 0);
                 applyFilters();
             } catch (error) {
                 console.error('Error removing background:', error);
@@ -516,726 +483,12 @@ document.getElementById('openLayersButton').addEventListener('click', function()
         let selectedColors = ["#FFFFFF", "#000000", "#2A2A2A", "#ffdcbf", "#fbb697", "#f9957b", "#d07a5f", "#9e4a32"];
         const skinTones = [
             "#FFD4A3", "#FDB1A3", "#FBA87D", "#F9967B", "#D0785F",
-            "#B86851", "#9E4A32", "#85492B", "#763726", "#431E09"
+            "#B86851", "#9E4A32", "#763726", "#431E09", "#2A2A2A"
         ];
 
-        const fixedColorTable = [
-            "#ffffff", "#000000", "#00fffc", "#00adff", "#0048ff", "#002499", "#037aff", "#ffa5e0", "#aae2ff", "#ffc9ec", "#ff4fcb", "#ff0480", "#ff00cc", "#c000ff", "#6a00a1", "#fffdb3", "#fff600", "#ffa200", "#ff7e00", "#ff0000", "#ab0000", "#9cff00", "#00ffb4", "#00b300", "#037603", "#00520c", "#485a00", "#1f370f", "#c7c7c7", "#939393", "#464646", "#2a2a2a", "#ffdcbf", "#fdbdab", "#fbb697", "#f9957b", "#d07a5f", "#b86851", "#9e4a32", "#85492b", "#763726", "#431e09", "#fde5d0", "#740012", "#d1786a", "#a1008c", "#ffba00", "#921d00", "#c5a5ff", "#c36a00", "#00b5bc", "#F1D600", "#6a3319", "#ad6628", "#fe324a", "#bbe04c", "#c3ffb5", "#83ffdb", "#dadada", "#ff7e7e", "#edad75"
-        ];
-
-        let isDragging = false;
-        let startX, startY, initialScrollLeft, initialScrollTop, scale = 1.0;
-        let zoomClicks = 0;
-        const maxZoomClicks = 8;
-
-        function generatePixelArt() {
-            const imageUpload = document.getElementById('imageUpload').files[0];
-            if (imageUpload) {
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    const img = new Image();
-                    img.onload = function () {
-                        createPixelArt(img);
-                    };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(imageUpload);
-            }
+        function clamp(value, min, max) {
+            return Math.min(Math.max(value, min), max);
         }
-
-        function createPixelArt(img) {
-            const canvas = document.getElementById('pixelCanvas');
-            const ctx = canvas.getContext('2d');
-            const width = img.width;
-            const height = img.height;
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(img, 0, 0, width, height);
-            const imageData = ctx.getImageData(0, 0, width, height);
-            currentImageData = imageData;
-            drawPixelatedImage(imageData);
-            updateColors();
-            document.getElementById('pixelCanvas').style.display = 'block';
-
-            const canvasContainer = document.getElementById('pixelContainer');
-            canvasContainer.addEventListener('mousedown', startDrag);
-            canvasContainer.addEventListener('mousemove', drag);
-            canvasContainer.addEventListener('mouseup', endDrag);
-            canvasContainer.addEventListener('mouseleave', endDrag);
-            canvasContainer.addEventListener('wheel', zoom);
-        }
-
-        function startDrag(event) {
-            isDragging = true;
-            startX = event.clientX;
-            startY = event.clientY;
-            const canvasContainer = document.getElementById('pixelContainer');
-            initialScrollLeft = canvasContainer.scrollLeft;
-            initialScrollTop = canvasContainer.scrollTop;
-            canvasContainer.style.cursor = 'grabbing';
-        }
-
-        function drag(event) {
-            if (isDragging) {
-                const canvasContainer = document.getElementById('pixelContainer');
-                const dx = event.clientX - startX;
-                const dy = event.clientY - startY;
-                canvasContainer.scrollLeft = initialScrollLeft - dx;
-                canvasContainer.scrollTop = initialScrollTop - dy;
-            }
-        }
-
-        function endDrag() {
-            isDragging = false;
-            const canvasContainer = document.getElementById('pixelContainer');
-            canvasContainer.style.cursor = 'grab';
-        }
-
-        function zoom(event) {
-            event.preventDefault();
-            const canvas = document.getElementById('pixelCanvas');
-            const canvasContainer = document.getElementById('pixelContainer');
-            const rect = canvas.getBoundingClientRect();
-            const offsetX = event.clientX - rect.left + canvasContainer.scrollLeft;
-            const offsetY = event.clientY - rect.top + canvasContainer.scrollTop;
-
-            let delta = event.deltaY > 0 ? -0.1 : 0.1;
-            if (event.deltaY < 0) {
-                zoomClicks++;
-                scale = Math.min(scale + delta, 10);
-            }
-            if (event.deltaY > 0 && zoomClicks > -8) {
-                zoomClicks--;
-                scale = Math.max(scale + delta, 0.1);
-            }
-
-            const prevScrollLeft = canvasContainer.scrollLeft;
-            const prevScrollTop = canvasContainer.scrollTop;
-            const prevScale = scale - delta;
-
-            const newScrollLeft = (offsetX + prevScrollLeft) * (scale / prevScale) - offsetX;
-            const newScrollTop = (offsetY + prevScrollTop) * (scale / prevScale) - offsetY;
-
-            canvas.style.transformOrigin = 'center center';
-            canvas.style.transform = `scale(${scale})`;
-
-            canvasContainer.scrollLeft = newScrollLeft;
-            canvasContainer.scrollTop = newScrollTop;
-        }
-
-        function updateColors() {
-            if (!currentImageData) return;
-            const skinToneCount = parseInt(document.getElementById('skinToneCount').value);
-            const skinToneTable = getSkinToneTable(skinTones, skinToneCount);
-            const colorTable = selectedColors;
-            const canvas = document.getElementById('pixelCanvas');
-            const ctx = canvas.getContext('2d');
-            const imageData = new ImageData(
-                new Uint8ClampedArray(currentImageData.data),
-                currentImageData.width,
-                currentImageData.height
-            );
-
-            const ditheringTypeElement = document.querySelector('input[name="ditheringType"]:checked');
-            if (!ditheringTypeElement) return;
-
-            const ditheringType = ditheringTypeElement.value;
-            const intensityElement = document.getElementById(`${ditheringType}Percentage`);
-            if (!intensityElement) return;
-
-            const intensity = parseInt(intensityElement.value) / 100;
-
-            if (ditheringType === 'diffusion') {
-                applyDiffusionDithering(imageData, imageData.width, imageData.height, skinToneTable.concat(colorTable), intensity);
-            } else if (ditheringType === 'standard') {
-                applyStandardDithering(imageData, imageData.width, imageData.height, skinToneTable.concat(colorTable), intensity);
-            } else if (ditheringType === 'blueNoise') {
-                applyBlueNoiseDithering(imageData, imageData.width, imageData.height, skinToneTable.concat(colorTable), intensity);
-            }
-
-            ensureColorsInTable(imageData, fixedColorTable);
-            drawPixelatedImage(imageData);
-            updateColorPalette(skinToneTable, colorTable);
-        }
-
-        function getSkinToneTable(colors, maxCount) {
-            const usage = countColorUsage(currentImageData, colors);
-            const sortedColors = Object.keys(usage).sort((a, b) => usage[b] - usage[a]);
-            const selectedColors = [];
-            const step = Math.max(1, Math.floor(sortedColors.length / maxCount));
-            for (let i = 0; i < sortedColors.length; i += step) {
-                if (selectedColors.length < maxCount) {
-                    selectedColors.push(sortedColors[i]);
-                }
-            }
-            return selectedColors;
-        }
-
-        function countColorUsage(imageData, colors) {
-            const colorUsage = {};
-            colors.forEach(color => colorUsage[color] = 0);
-            const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-                const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
-                const hexColor = rgbToHex(r, g, b);
-                if (colorUsage.hasOwnProperty(hexColor)) {
-                    colorUsage[hexColor]++;
-                }
-            }
-            return colorUsage;
-        }
-
-        function rgbToHex(r, g, b) {
-            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
-        }
-
-        function ensureColorsInTable(imageData, colorTable) {
-            const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-                const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
-                const closestColor = findClosestColor(r, g, b, colorTable);
-                data[i] = closestColor[0];
-                data[i + 1] = closestColor[1];
-                data[i + 2] = closestColor[2];
-            }
-        }
-
-       function findClosestColor(r, g, b, colorTable) {
-    let minDistance = Infinity;
-    let closestColor = null;
-    colorTable.forEach(hex => {
-        const [red, green, blue] = hexToRgb(hex);
-        const distance = Math.sqrt((r - red) ** 2 + (g - green) ** 2 + (b - blue) ** 2);
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestColor = [red, green, blue];
-        }
-    });
-    return closestColor;
-}
-
-
-        function rgbToHex(r, g, b) {
-            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
-        }
-
-        function hexToRgb(hex) {
-            const bigint = parseInt(hex.slice(1), 16);
-            const r = (bigint >> 16) & 255;
-            const g = (bigint >> 8) & 255;
-            const b = (bigint & 255);
-            return [r, g, b];
-        }
-
-        function applyDiffusionDithering(imageData, width, height, colorValues, intensity) {
-            const data = imageData.data;
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const i = (y * width + x) * 4;
-                    const oldColor = [data[i], data[i + 1], data[i + 2]];
-                    const newColor = findClosestColor(...oldColor, colorValues);
-                    const error = oldColor.map((c, index) => c - newColor[index]);
-                    data[i] = newColor[0];
-                    data[i + 1] = newColor[1];
-                    data[i + 2] = newColor[2];
-                    distributeError(data, width, height, x, y, error, intensity);
-                }
-            }
-        }
-
-        function applyStandardDithering(imageData, width, height, colorValues, intensity) {
-            const data = imageData.data;
-            const bayerMatrix = [
-                [0, 2],
-                [3, 1]
-            ];
-            const matrixSize = 2;
-
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const i = (y * width + x) * 4;
-                    const oldColor = [data[i], data[i + 1], data[i + 2]];
-                    const threshold = (bayerMatrix[y % matrixSize][x % matrixSize] / 4) * 255 * intensity;
-
-                    const newColor = oldColor.map(c => clamp(c + (threshold - 128) * 0.2));
-
-                    const finalColor = findClosestColor(newColor[0], newColor[1], newColor[2], colorValues);
-
-                    data[i] = finalColor[0];
-                    data[i + 1] = finalColor[1];
-                    data[i + 2] = finalColor[2];
-                }
-            }
-        }
-
-        function clamp(value) {
-            return Math.max(0, Math.min(255, value));
-        }
-
-        function applyBlueNoiseDithering(imageData, width, height, colorValues, intensity) {
-            const data = imageData.data;
-            const blueNoise = generateBlueNoise(width, height);
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const i = (y * width + x) * 4;
-                    const noiseValue = blueNoise[y * width + x] * intensity;
-                    const oldColor = [data[i] + noiseValue, data[i + 1] + noiseValue, data[i + 2] + noiseValue];
-                    const newColor = findClosestColor(...oldColor, colorValues);
-                    data[i] = newColor[0];
-                    data[i + 1] = newColor[1];
-                    data[i + 2] = newColor[2];
-                }
-            }
-        }
-
-        function generateBlueNoise(width, height) {
-            const noise = new Float32Array(width * height);
-            for (let i = 0; i < noise.length; i++) {
-                noise[i] = (Math.random() - 0.5) * 255;
-            }
-            return noise;
-        }
-
-        function distributeError(data, width, height, x, y, error, factor) {
-            distribute(data, width, height, x + 1, y, error, 7 / 16 * factor);
-            distribute(data, width, height, x - 1, y + 1, error, 3 / 16 * factor);
-            distribute(data, width, height, x, y + 1, error, 5 / 16 * factor);
-            distribute(data, width, height, x + 1, y + 1, error, 1 / 16 * factor);
-        }
-
-        function distribute(data, width, height, x, y, error, factor) {
-            if (x < 0 || x >= width || y < 0 || y >= height) return;
-            const i = (y * width + x) * 4;
-            data[i] = clamp(data[i] + error[0] * factor);
-            data[i + 1] = clamp(data[i + 1] + error[1] * factor);
-            data[i + 2] = clamp(data[i + 2] + error[2] * factor);
-        }
-
-        function updateColorPalette(skinToneTable, colorTable) {
-            const skinTonePalette = document.getElementById('skinTonePalette');
-            skinTonePalette.innerHTML = '';
-            skinToneTable.forEach(color => {
-                const colorBox = document.createElement('div');
-                colorBox.className = 'colorBox';
-                colorBox.style.backgroundColor = color;
-                colorBox.addEventListener('click', () => {
-                    if (!selectedColors.includes(color)) {
-                        selectedColors.push(color);
-                        updateColors();
-                    }
-                });
-                skinTonePalette.appendChild(colorBox);
-            });
-
-            const selectedColorsContainer = document.getElementById('selectedColors');
-            selectedColorsContainer.innerHTML = '';
-            colorTable.forEach(color => {
-                const colorBox = document.createElement('div');
-                colorBox.className = 'colorBox';
-                colorBox.style.backgroundColor = color;
-                colorBox.addEventListener('click', () => {
-                    selectedColors = selectedColors.filter(c => c !== color);
-                    updateColors();
-                });
-                selectedColorsContainer.appendChild(colorBox);
-            });
-
-            const allColorsContainer = document.getElementById('allColors');
-            allColorsContainer.innerHTML = '';
-            fixedColorTable.forEach(color => {
-                const colorBox = document.createElement('div');
-                colorBox.className = 'colorBox';
-                colorBox.style.backgroundColor = color;
-                colorBox.addEventListener('click', () => {
-                    if (!selectedColors.includes(color)) {
-                        selectedColors.push(color);
-                        updateColors();
-                    }
-                });
-                allColorsContainer.appendChild(colorBox);
-            });
-        }
-
-   function drawPixelatedImage(imageData) {
-    const canvas = document.getElementById('pixelCanvas');
-    const ctx = canvas.getContext('2d');
-    const width = imageData.width;
-    const height = imageData.height;
-    const pixelSize = 5;  // Ou outro tamanho conforme necessário
-    canvas.width = width * pixelSize;
-    canvas.height = height * pixelSize;
-    ctx.imageSmoothingEnabled = false;  // Desativa a suavização
-
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const i = (y * width + x) * 4;
-            const r = imageData.data[i];
-            const g = imageData.data[i + 1];
-            const b = imageData.data[i + 2];
-            const a = imageData.data[i + 3] / 255; // Valor do alpha
-
-            if (a === 0) {
-                ctx.clearRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
-            } else {
-                let closestColor = findClosestColor(r, g, b, fixedColorTable);
-
-                if (isEdgePixel(x, y, imageData)) {
-                    const predominantColor = findPredominantColor(getNeighbors(imageData, x, y));
-                    closestColor = predominantColor || closestColor;
-                }
-
-                ctx.fillStyle = `rgb(${closestColor[0]}, ${closestColor[1]}, ${closestColor[2]})`;
-                ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
-            }
-        }
-    }
-}
-
-function isEdgePixel(x, y, imageData) {
-    const width = imageData.width;
-    const height = imageData.height;
-    const neighbors = getNeighbors(imageData, x, y);
-    const currentColor = [imageData.data[(y * width + x) * 4], imageData.data[(y * width + x) * 4 + 1], imageData.data[(y * width + x) * 4 + 2]];
-
-    let edgePixel = false;
-    neighbors.forEach(neighbor => {
-        if (neighbor[3] === 0 || colorDistance(currentColor, neighbor) > 50) { // Limiar para distância de cor
-            edgePixel = true;
-        }
-    });
-
-    return edgePixel;
-}
-
-function getNeighbors(imageData, x, y) {
-    const width = imageData.width;
-    const height = imageData.height;
-    const neighbors = [];
-    const offsets = [-1, 0, 1];
-
-    offsets.forEach(offsetY => {
-        offsets.forEach(offsetX => {
-            if (offsetX === 0 && offsetY === 0) return; // Ignora o pixel atual
-            const nx = x + offsetX;
-            const ny = y + offsetY;
-            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                const ni = (ny * width + nx) * 4;
-                neighbors.push([
-                    imageData.data[ni],
-                    imageData.data[ni + 1],
-                    imageData.data[ni + 2],
-                    imageData.data[ni + 3] / 255
-                ]);
-            }
-        });
-    });
-
-    return neighbors;
-}
-
-function findPredominantColor(neighbors) {
-    const colorCounts = {};
-    neighbors.forEach(color => {
-        const key = color.slice(0, 3).join(',');
-        if (colorCounts[key]) {
-            colorCounts[key]++;
-        } else {
-            colorCounts[key] = 1;
-        }
-    });
-
-    let predominantColor = null;
-    let maxCount = 0;
-    Object.keys(colorCounts).forEach(key => {
-        if (colorCounts[key] > maxCount) {
-            maxCount = colorCounts[key];
-            predominantColor = key.split(',').map(Number);
-        }
-    });
-
-    return predominantColor;
-}
-
-function colorDistance(color1, color2) {
-    return Math.sqrt(
-        (color1[0] - color2[0]) ** 2 +
-        (color1[1] - color2[1]) ** 2 +
-        (color1[2] - color2[2]) ** 2
-    );
-}
-
-
-        function reduceAndCopyPixelArt() {
-    const pixelCanvas = document.getElementById('pixelCanvas');
-    const reducedCanvas = document.createElement('canvas');
-    reducedCanvas.width = pixelCanvas.width / 5;
-    reducedCanvas.height = pixelCanvas.height / 5;
-    const ctx = reducedCanvas.getContext('2d');
-
-    ctx.imageSmoothingEnabled = false;
-
-    // Desenhar a imagem reduzida no canvas, mantendo o fundo transparente
-    ctx.drawImage(pixelCanvas, 0, 0, reducedCanvas.width, reducedCanvas.height);
-
-    // Copiar o canvas reduzido para a área de transferência como PNG para manter a transparência
-    reducedCanvas.toBlob(blob => {
-        const item = new ClipboardItem({ "image/png": blob });
-        navigator.clipboard.write([item]).then(() => {
-            console.log('Imagem copiada para a área de transferência');
-            flashButton();
-        });
-    }, 'image/png');
-}
-
-        function flashButton() {
-            const button = document.getElementById('reduceCopyButton');
-            button.style.backgroundColor = 'green';
-            setTimeout(() => {
-                button.style.backgroundColor = '';
-            }, 500);
-        }
-
-        function clearColors() {
-            selectedColors = [];
-            updateColorPalette([], selectedColors);
-            updateColors();
-        }
-
-        async function autoColorize() {
-            document.getElementById('skinToneCount').value = 0;
-            updateColors();
-
-            selectedColors = [];
-            updateColorPalette([], selectedColors);
-
-            if (!currentImageData) return;
-            const canvas = document.getElementById('pixelCanvas');
-            const ctx = canvas.getContext('2d');
-            const imageData = new ImageData(
-                new Uint8ClampedArray(currentImageData.data),
-                currentImageData.width,
-                currentImageData.height
-            );
-
-            ensureColorsInTable(imageData, fixedColorTable);
-            selectedColors = extractUsedColors(imageData);
-            selectedColors = reduceColorPalette(selectedColors, 20);
-
-            mergeSimilarColors(imageData);
-            cleanUpImage(imageData);
-
-            drawPixelatedImage(imageData);
-
-            const usedColors = extractUsedColors(imageData);
-            selectedColors = [...new Set(usedColors)];
-            updateColorPalette([], selectedColors);
-            updateColors();
-        }
-
-        function extractUsedColors(imageData) {
-            const colors = [];
-            const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-                const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
-                const hexColor = rgbToHex(r, g, b);
-                if (!colors.includes(hexColor)) {
-                    colors.push(hexColor);
-                }
-            }
-            return colors;
-        }
-
-        function reduceColorPalette(colors, maxColors) {
-            while (colors.length > maxColors) {
-                let minDistance = Infinity;
-                let colorPair = [null, null];
-                for (let i = 0; i < colors.length; i++) {
-                    for (let j = i + 1; j < colors.length; j++) {
-                        const distance = colorDistance(hexToRgb(colors[i]), hexToRgb(colors[j]));
-                        if (distance < minDistance) {
-                            minDistance = distance;
-                            colorPair = [i, j];
-                        }
-                    }
-                }
-                const newColor = averageColor(hexToRgb(colors[colorPair[0]]), hexToRgb(colors[colorPair[1]]));
-                colors[colorPair[0]] = rgbToHex(newColor[0], newColor[1], newColor[2]);
-                colors.splice(colorPair[1], 1);
-            }
-            return colors;
-        }
-
-        function averageColor(color1, color2) {
-            return [
-                Math.round((color1[0] + color2[0]) / 2),
-                Math.round((color1[1] + color2[1]) / 2),
-                Math.round((color1[2] + color2[2]) / 2)
-            ];
-        }
-
-        function mergeSimilarColors(imageData) {
-            const data = imageData.data;
-            const combinedColors = fixedColorTable.concat(skinTones);
-
-            for (let i = 0; i < data.length; i += 4) {
-                const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
-                const closestColor = findClosestColor(r, g, b, combinedColors);
-
-                if (closestColor) {
-                    data[i] = closestColor[0];
-                    data[i + 1] = closestColor[1];
-                    data[i + 2] = closestColor[2];
-                }
-            }
-        }
-
-        function cleanUpImage(imageData) {
-            const data = imageData.data;
-            const width = imageData.width;
-            const height = imageData.height;
-
-            for (let y = 1; y < height - 1; y++) {
-                for (let x = 1; x < width - 1; x++) {
-                    const i = (y * width + x) * 4;
-                    const color = [data[i], data[i + 1], data[i + 2]];
-
-                    const neighbors = getNeighbors(data, width, height, x, y);
-                    const predominantColor = findPredominantColor(neighbors);
-
-                    if (colorDistance(color, predominantColor) > 1) {
-                        data[i] = predominantColor[0];
-                        data[i + 1] = predominantColor[1];
-                        data[i + 2] = predominantColor[2];
-                    }
-                }
-            }
-        }
-
-        function getNeighbors(data, width, height, x, y) {
-            const neighbors = [];
-            const directions = [
-                [-1, -1], [-1, 0], [-1, 1],
-                [0, -1], [0, 1],
-                [1, -1], [1, 0], [1, 1]
-            ];
-
-            directions.forEach(dir => {
-                const nx = x + dir[0];
-                const ny = y + dir[1];
-                const ni = (ny * width + nx) * 4;
-                neighbors.push([data[ni], data[ni + 1], data[ni + 2]]);
-            });
-
-            return neighbors;
-        }
-
-        function findPredominantColor(neighbors) {
-            const colorCounts = {};
-            neighbors.forEach(color => {
-                const key = color.join(',');
-                if (colorCounts[key]) {
-                    colorCounts[key]++;
-                } else {
-                    colorCounts[key] = 1;
-                }
-            });
-
-            let predominantColor = null;
-            let maxCount = 0;
-            Object.keys(colorCounts).forEach(key => {
-                if (colorCounts[key] > maxCount) {
-                    maxCount = colorCounts[key];
-                    predominantColor = key.split(',').map(Number);
-                }
-            });
-
-            return predominantColor;
-        }
-
-        function colorDistance(color1, color2) {
-            return Math.sqrt(
-                (color1[0] - color2[0]) ** 2 +
-                (color1[1] - color2[1]) ** 2 +
-                (color1[2] - color2[2]) ** 2
-            );
-        }
-
-        function rgbToHex(r, g, b) {
-            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
-        }
-
-        function hexToRgb(hex) {
-            const bigint = parseInt(hex.slice(1), 16);
-            const r = (bigint >> 16) & 255;
-            const g = (bigint >> 8) & 255;
-            const b = (bigint & 255);
-            return [r, g, b];
-        }
-    </script>
-
-    <script>
-        document.addEventListener('contextmenu', function (e) {
-            e.preventDefault();
-            alert('O botão direito do mouse está desativado.');
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if ((e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) ||
-                (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) ||
-                (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) ||
-                (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0))
-            ) {
-                e.preventDefault();
-                alert('A inspeção de elementos está desativada.');
-            }
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
-                e.preventDefault();
-                alert('Salvar a página está desativado.');
-            }
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if ((e.ctrlKey && e.key === 'p') || (e.metaKey && e.key === 'p')) {
-                e.preventDefault();
-                alert('Imprimir página está desativado.');
-            }
-        });
-
-document.getElementById('startWithCopyButton').addEventListener('click', handleStartWithCopy);
-
-async function handleStartWithCopy() {
-    try {
-        const items = await navigator.clipboard.read();
-        for (const item of items) {
-            if (item.types.includes('image/png') || item.types.includes('image/jpeg')) {
-                const blob = await item.getType(item.types[0]);
-                const img = new Image();
-                img.onload = function () {
-                    const imageContainer = document.getElementById('imageContainer');
-                    const imageElement = document.getElementById('image');
-                    imageElement.src = img.src;
-                    imageElement.style.display = 'block';
-                    imageContainer.style.border = 'none';
-                    if (cropper) {
-                        cropper.destroy();
-                    }
-                    cropper = new Cropper(imageElement, {
-                        aspectRatio: NaN,
-                        viewMode: 1,
-                    });
-                };
-                img.src = URL.createObjectURL(blob);
-            }
-        }
-    } catch (error) {
-        console.error('Falha ao ler da área de transferência: ', error);
-    }
-}
-
     </script>
 </body>
-
 </html>
