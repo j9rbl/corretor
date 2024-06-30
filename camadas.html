@@ -52,8 +52,10 @@
     box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
     position: relative;
     display: flex;
-    overflow-x: auto;
+    overflow-x: scroll; /* Permite a rolagem horizontal */
     overflow-y: hidden;
+    white-space: nowrap; /* Evita quebra de linha */
+    -webkit-overflow-scrolling: touch; /* Suporte para rolagem suave no iOS */
 }
 
 .layer {
@@ -205,7 +207,10 @@ function createWorkspace() {
     } else {
         alert('Por favor, insira valores válidos.');
     }
+ initializeTouchScroll(); // Adicione esta linha
 }
+
+
 
 function resetWorkspace() {
     location.reload();
@@ -580,7 +585,23 @@ function flipLayer() {
         flippedImage.src = tempCanvas.toDataURL();
     }
 }
+function initializeTouchScroll() {
+    const layersContainer = document.getElementById('layers');
+    let startX, scrollLeft;
 
+    layersContainer.addEventListener('touchstart', (e) => {
+        const firstTouch = e.touches[0];
+        startX = firstTouch.clientX;
+        scrollLeft = layersContainer.scrollLeft;
+    });
+
+    layersContainer.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const firstTouch = e.touches[0];
+        const walk = (firstTouch.clientX - startX) * 2; // Multiplicador para aumentar a velocidade de rolagem
+        layersContainer.scrollLeft = scrollLeft - walk;
+    });
+}
     </script>
 </body>
 </html>
