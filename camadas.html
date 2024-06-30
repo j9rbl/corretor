@@ -155,76 +155,81 @@
         <button class="tool-btn" onclick="pasteImage()">Colar</button>
         <button class="tool-btn" onclick="cutEntireProject()">Recortar</button>
         <input type="range" id="zoom-slider" min="0.1" max="3" step="0.1" value="1" oninput="adjustZoom()">
+<button class="tool-btn" onclick="flipLayer()">Inverter Imagem</button>
+
     </div>
 
     <script>
-        let canvas, ctx, scale = 1;
-        let layers = [];
-        let selectedLayer = null;
-        let offsetX, offsetY, startX, startY;
-        let isDragging = false;
-        let isSelectingAll = false;
-        let canvasWidth, canvasHeight;
+ let canvas, ctx, scale = 1;
+let layers = [];
+let selectedLayer = null;
+let offsetX, offsetY, startX, startY;
+let isDragging = false;
+let isSelectingAll = false;
+let canvasWidth, canvasHeight;
+let layerCounter = 0; // Contador global para camadas
 
-        function createWorkspace() {
-            canvasWidth = document.getElementById('width').value;
-            canvasHeight = document.getElementById('height').value;
+function createWorkspace() {
+    canvasWidth = document.getElementById('width').value;
+    canvasHeight = document.getElementById('height').value;
 
-            if (canvasWidth > 0 && canvasHeight > 0) {
-                canvas = document.getElementById('canvas');
-                canvas.width = canvasWidth;
-                canvas.height = canvasHeight;
-                ctx = canvas.getContext('2d');
-                ctx.imageSmoothingEnabled = false;
-                canvas.style.background = 'transparent';
+    if (canvasWidth > 0 && canvasHeight > 0) {
+        canvas = document.getElementById('canvas');
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        canvas.style.background = 'transparent';
 
-                addLayer();
+        addLayer();
 
-                document.getElementById('workspace').addEventListener('wheel', zoom, { passive: false });
-                canvas.addEventListener('mousedown', startDragging);
-                canvas.addEventListener('mousemove', drag);
-                canvas.addEventListener('mouseup', stopDragging);
-                canvas.addEventListener('touchstart', startDragging, { passive: false });
-                canvas.addEventListener('touchmove', drag, { passive: false });
-                canvas.addEventListener('touchend', stopDragging);
-                document.addEventListener('paste', pasteImage);
-                document.addEventListener('keydown', handleKeyDown);
-                initializeDragAndDrop();
+        document.getElementById('workspace').addEventListener('wheel', zoom, { passive: false });
+        canvas.addEventListener('mousedown', startDragging);
+        canvas.addEventListener('mousemove', drag);
+        canvas.addEventListener('mouseup', stopDragging);
+        canvas.addEventListener('touchstart', startDragging, { passive: false });
+        canvas.addEventListener('touchmove', drag, { passive: false });
+        canvas.addEventListener('touchend', stopDragging);
+        document.addEventListener('paste', pasteImage);
+        document.addEventListener('keydown', handleKeyDown);
+        initializeDragAndDrop();
 
-                document.getElementById('width').style.display = 'none';
-                document.getElementById('height').style.display = 'none';
-                document.getElementById('width-label').style.display = 'none';
-                document.getElementById('height-label').style.display = 'none';
-                document.getElementById('project-title').style.display = 'none';
-                document.getElementById('createButton').style.display = 'none';
-                document.getElementById('resetButton').style.display = 'block';
-            } else {
-                alert('Por favor, insira valores válidos.');
-            }
-        }
+        document.getElementById('width').style.display = 'none';
+        document.getElementById('height').style.display = 'none';
+        document.getElementById('width-label').style.display = 'none';
+        document.getElementById('height-label').style.display = 'none';
+        document.getElementById('project-title').style.display = 'none';
+        document.getElementById('createButton').style.display = 'none';
+        document.getElementById('resetButton').style.display = 'block';
+    } else {
+        alert('Por favor, insira valores válidos.');
+    }
+}
 
-        function resetWorkspace() {
-            location.reload();
-        }
+function resetWorkspace() {
+    location.reload();
+}
 
-        function zoom(event) {
-            event.preventDefault();
-            const canvasContainer = document.getElementById('canvas-container');
-            const scaleAmount = 0.1;
-            const direction = event.deltaY > 0 ? -1 : 1;
+function zoom(event) {
+    event.preventDefault();
+    const canvasContainer = document.getElementById('canvas-container');
+    const scaleAmount = 0.1;
+    const direction = event.deltaY > 0 ? -1 : 1;
 
-            const prevScale = scale;
-            scale *= (1 + scaleAmount * direction);
+    const prevScale = scale;
+    scale *= (1 + scaleAmount * direction);
 
-            canvasContainer.style.transform = `scale(${scale})`;
-            canvasContainer.style.transformOrigin = 'center center';
+    canvasContainer.style.transform = `scale(${scale})`;
+    canvasContainer.style.transformOrigin = 'center center';
 
-            redrawLayers();
-        }
+    redrawLayers();
+}
 
-       function addLayer(image = null) {
+function addLayer(image = null) {
+    const maxLayerId = layers.length ? Math.max(...layers.map(layer => layer.id)) : 0;
+    const newLayerId = maxLayerId + 1;
     const layer = {
-        id: layers.length,
+        id: newLayerId, // Usar o novo ID calculado
         image: image,
         x: 0,
         y: 0,
@@ -252,8 +257,7 @@ function adjustLayerPositions() {
     layerList.style.width = `${totalWidth}px`; // Ajusta a largura do container das camadas
 }
 
-
-       function renderLayerList() {
+function renderLayerList() {
     const layerList = document.getElementById('layer-list');
     layerList.innerHTML = '';
     layers.forEach(layer => {
@@ -261,7 +265,7 @@ function adjustLayerPositions() {
         div.className = 'layer';
         div.draggable = true;
         div.dataset.id = layer.id;
-        div.innerHTML = `<span class="drag-handle">☰</span> Camada ${layer.id + 1} <button class="delete-btn" onclick="deleteLayer(${layer.id})">×</button>`;
+        div.innerHTML = `<span class="drag-handle">☰</span> Camada ${layer.id} <button class="delete-btn" onclick="deleteLayer(${layer.id})">×</button>`;
         div.onclick = () => selectLayer(layer.id);
         if (selectedLayer === layer.id) {
             div.classList.add('selected');
@@ -271,129 +275,127 @@ function adjustLayerPositions() {
     adjustLayerPositions(); // Chame a função para ajustar a posição das camadas
 }
 
+function selectLayer(id) {
+    selectedLayer = id;
+    renderLayerList();
+}
 
+function deleteLayer(id) {
+    layers = layers.filter(layer => layer.id !== id);
+    if (selectedLayer === id) {
+        selectedLayer = null;
+    }
+    renderLayerList();
+    redrawLayers();
+}
 
-        function selectLayer(id) {
-            selectedLayer = id;
-            renderLayerList();
-        }
+function startDragging(event) {
+    event.preventDefault();
+    const clientX = event.clientX || event.touches[0].clientX;
+    const clientY = event.clientY || event.touches[0].clientY;
 
-        function deleteLayer(id) {
-            layers = layers.filter(layer => layer.id !== id);
-            if (selectedLayer === id) {
-                selectedLayer = null;
-            }
-            renderLayerList();
-            redrawLayers();
-        }
+    if (selectedLayer !== null) {
+        const layer = layers.find(l => l.id === selectedLayer);
+        offsetX = clientX - layer.x;
+        offsetY = clientY - layer.y;
+        startX = clientX;
+        startY = clientY;
+        isDragging = true;
+        canvas.style.cursor = 'grabbing';
+    }
+}
 
-        function startDragging(event) {
-            event.preventDefault();
-            const clientX = event.clientX || event.touches[0].clientX;
-            const clientY = event.clientY || event.touches[0].clientY;
+function drag(event) {
+    if (isDragging && selectedLayer !== null) {
+        event.preventDefault();
+        const clientX = event.clientX || event.touches[0].clientX;
+        const clientY = event.clientY || event.touches[0].clientY;
 
-            if (selectedLayer !== null) {
-                const layer = layers[selectedLayer];
-                offsetX = clientX - layer.x;
-                offsetY = clientY - layer.y;
-                startX = clientX;
-                startY = clientY;
-                isDragging = true;
-                canvas.style.cursor = 'grabbing';
-            }
-        }
+        const layer = layers.find(l => l.id === selectedLayer);
+        layer.x = (clientX - offsetX);
+        layer.y = (clientY - offsetY);
+        redrawLayers();
+    }
+}
 
-        function drag(event) {
-            if (isDragging && selectedLayer !== null) {
-                event.preventDefault();
-                const clientX = event.clientX || event.touches[0].clientX;
-                const clientY = event.clientY || event.touches[0].clientY;
+function stopDragging() {
+    isDragging = false;
+    canvas.style.cursor = 'default';
+}
 
-                const layer = layers[selectedLayer];
-                layer.x = (clientX - offsetX);
-                layer.y = (clientY - offsetY);
-                redrawLayers();
-            }
-        }
-
-        function stopDragging() {
-            isDragging = false;
-            canvas.style.cursor = 'default';
-        }
-
-        function redrawLayers() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            layers.forEach(layer => {
-                if (layer.image) {
-                    ctx.imageSmoothingEnabled = false;
-                    ctx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
-                }
-            });
-        }
-
-        function pasteImage(event) {
-            const items = event.clipboardData.items;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
-                    const blob = items[i].getAsFile();
-                    const img = new Image();
-                    img.onload = function () {
-                        addLayer(img);
-                    }
-                    img.src = URL.createObjectURL(blob);
-                }
-            }
-        }
-
-        function drawLayer(layer) {
+function redrawLayers() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    layers.forEach(layer => {
+        if (layer.image) {
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
         }
+    });
+}
 
-        function handleKeyDown(event) {
-            if (event.ctrlKey && event.key === 't') {
-                if (selectedLayer !== null) {
-                    activateResizeTool();
-                }
+function pasteImage(event) {
+    const items = event.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+            const blob = items[i].getAsFile();
+            const img = new Image();
+            img.onload = function () {
+                addLayer(img);
             }
-            if (event.ctrlKey && event.key === 'a') {
-                event.preventDefault();
-                selectAll();
-            }
-            if (event.ctrlKey && event.key === 'x') {
-                event.preventDefault();
-                cutLayer();
-            }
+            img.src = URL.createObjectURL(blob);
         }
+    }
+}
 
-        function activateResizeTool() {
-            if (selectedLayer !== null) {
-                const resizeSlider = document.getElementById('resize-slider');
-                resizeSlider.style.display = 'block';
-                resizeSlider.value = 100;
-            }
+function drawLayer(layer) {
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
+}
+
+function handleKeyDown(event) {
+    if (event.ctrlKey && event.key === 't') {
+        if (selectedLayer !== null) {
+            activateResizeTool();
         }
+    }
+    if (event.ctrlKey && event.key === 'a') {
+        event.preventDefault();
+        selectAll();
+    }
+    if (event.ctrlKey && event.key === 'x') {
+        event.preventDefault();
+        cutLayer();
+    }
+}
 
-        function resizeLayer() {
-            if (selectedLayer !== null) {
-                const layer = layers[selectedLayer];
-                const resizeSlider = document.getElementById('resize-slider');
-                const scaleFactor = resizeSlider.value / 100;
-
-                layer.width = layer.image.width * scaleFactor;
-                layer.height = layer.image.height * scaleFactor;
-
-                redrawLayers();
-            }
-        }
-
-        function selectAll() {
-            isSelectingAll = true;
-        }
-
-        function cutLayer() {
+function activateResizeTool() {
     if (selectedLayer !== null) {
-        const layer = layers[selectedLayer];
+        const resizeSlider = document.getElementById('resize-slider');
+        resizeSlider.style.display = 'block';
+        resizeSlider.value = 100;
+    }
+}
+
+function resizeLayer() {
+    if (selectedLayer !== null) {
+        const layer = layers.find(l => l.id === selectedLayer);
+        const resizeSlider = document.getElementById('resize-slider');
+        const scaleFactor = resizeSlider.value / 100;
+
+        layer.width = layer.image.width * scaleFactor;
+        layer.height = layer.image.height * scaleFactor;
+
+        redrawLayers();
+    }
+}
+
+function selectAll() {
+    isSelectingAll = true;
+}
+
+function cutLayer() {
+    if (selectedLayer !== null) {
+        const layer = layers.find(l => l.id === selectedLayer);
 
         // Criar um novo canvas temporário que será o destino do recorte
         const tempCanvas = document.createElement('canvas');
@@ -421,13 +423,12 @@ function adjustLayerPositions() {
     }
 }
 
+function cutEntireProject() {
+    selectAll();
+    cutLayer();
+}
 
-        function cutEntireProject() {
-            selectAll();
-            cutLayer();
-        }
-
-        function initializeDragAndDrop() {
+function initializeDragAndDrop() {
     const layerList = document.getElementById('layer-list');
 
     layerList.addEventListener('dragstart', (event) => {
@@ -459,53 +460,79 @@ function adjustLayerPositions() {
     });
 }
 
+function copyEntireProject() {
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
 
-        function copyEntireProject() {
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
+    layers.forEach(layer => {
+        if (layer.image) {
+            tempCtx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
+        }
+    });
 
-            layers.forEach(layer => {
-                if (layer.image) {
-                    tempCtx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
-                }
-            });
+    tempCanvas.toBlob(blob => {
+        const item = new ClipboardItem({ "image/png": blob });
+        navigator.clipboard.write([item]).then(() => {
+            console.log('Projeto copiado para a área de transferência.');
+        }).catch(err => {
+            console.error('Erro ao copiar o projeto para a área de transferência:', err);
+        });
+    }, 'image/png');
+}
 
-            tempCanvas.toBlob(blob => {
-                const item = new ClipboardItem({ "image/png": blob });
-                navigator.clipboard.write([item]).then(() => {
-                    console.log('Projeto copiado para a área de transferência.');
-                }).catch(err => {
-                    console.error('Erro ao copiar o projeto para a área de transferência:', err);
+function pasteImage() {
+    navigator.clipboard.read().then(items => {
+        for (let item of items) {
+            if (item.types.includes('image/png')) {
+                item.getType('image/png').then(blob => {
+                    const img = new Image();
+                    img.onload = function () {
+                        addLayer(img);
+                    };
+                    img.src = URL.createObjectURL(blob);
                 });
-            }, 'image/png');
+            }
         }
+    }).catch(err => {
+        console.error('Failed to read clipboard contents: ', err);
+    });
+}
 
-        function pasteImage() {
-            navigator.clipboard.read().then(items => {
-                for (let item of items) {
-                    if (item.types.includes('image/png')) {
-                        item.getType('image/png').then(blob => {
-                            const img = new Image();
-                            img.onload = function () {
-                                addLayer(img);
-                            };
-                            img.src = URL.createObjectURL(blob);
-                        });
-                    }
-                }
-            }).catch(err => {
-                console.error('Failed to read clipboard contents: ', err);
-            });
-        }
+function adjustZoom() {
+    const zoomLevel = document.getElementById('zoom-slider').value;
+    const canvasContainer = document.getElementById('canvas-container');
+    canvasContainer.style.transform = `scale(${zoomLevel})`;
+    canvasContainer.style.transformOrigin = 'center center';
+}
 
-        function adjustZoom() {
-            const zoomLevel = document.getElementById('zoom-slider').value;
-            const canvasContainer = document.getElementById('canvas-container');
-            canvasContainer.style.transform = `scale(${zoomLevel})`;
-            canvasContainer.style.transformOrigin = 'center center';
-        }
+function flipLayer() {
+    if (selectedLayer !== null) {
+        const layer = layers.find(l => l.id === selectedLayer);
+
+        // Criar um novo canvas temporário que será o destino da inversão
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = layer.width;
+        tempCanvas.height = layer.height;
+
+        // Desenhar a camada original invertida horizontalmente no canvas temporário
+        tempCtx.save();
+        tempCtx.scale(-1, 1); // Inverter horizontalmente
+        tempCtx.drawImage(layer.image, -layer.width, 0, layer.width, layer.height);
+        tempCtx.restore();
+
+        // Atualizar a imagem da camada com a imagem invertida
+        const flippedImage = new Image();
+        flippedImage.onload = function () {
+            layer.image = flippedImage;
+            redrawLayers();
+        };
+        flippedImage.src = tempCanvas.toDataURL();
+    }
+}
+
     </script>
 </body>
 </html>
