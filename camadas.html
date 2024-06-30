@@ -151,7 +151,7 @@
         <button class="tool-btn" id="createButton" onclick="createWorkspace()">Criar</button>
         <button class="tool-btn" id="resetButton" onclick="resetWorkspace()" style="display:none;">Recomeçar</button>
         <button class="tool-btn" onclick="activateResizeTool()">Ferramenta de Redimensionamento</button>
-        <input type="range" id="resize-slider" min="10" max="200" value="50" oninput="resizeLayer()">
+        <input type="range" id="resize-slider" min="1" max="200" value="50" oninput="resizeLayer()">
         <button class="tool-btn" onclick="copyEntireProject()">Copiar Projeto Todo</button>
         <button class="tool-btn" onclick="pasteImage()">Colar</button>
         <button class="tool-btn" onclick="cutEntireProject()">Recortar</button>
@@ -446,7 +446,7 @@ function initializeDragAndDrop() {
         const elements = Array.from(layerList.children);
         const currentElement = elements.find((element) => {
             return element !== draggingElement &&
-                event.clientX < element.getBoundingClientRect().left + element.clientWidth / 2;
+                (event.clientX || event.touches[0].clientX) < element.getBoundingClientRect().left + element.clientWidth / 2;
         });
         if (currentElement) {
             layerList.insertBefore(draggingElement, currentElement);
@@ -461,6 +461,49 @@ function initializeDragAndDrop() {
         layers = newOrder.map(id => layers.find(layer => layer.id === id));
         renderLayerList();
         redrawLayers();
+    });
+
+    // Suporte para toque
+    layerList.addEventListener('touchstart', (event) => {
+        const target = event.target.closest('.layer');
+        if (target) {
+            target.classList.add('dragging');
+            event.dataTransfer = {
+                setData: function (type, val) {
+                    this[type] = val;
+                },
+                getData: function (type) {
+                    return this[type];
+                }
+            };
+            event.dataTransfer.setData('text/plain', target.dataset.id);
+        }
+    });
+
+    layerList.addEventListener('touchmove', (event) => {
+        event.preventDefault();
+        const draggingElement = document.querySelector('.dragging');
+        const elements = Array.from(layerList.children);
+        const currentElement = elements.find((element) => {
+            return element !== draggingElement &&
+                event.touches[0].clientX < element.getBoundingClientRect().left + element.clientWidth / 2;
+        });
+        if (currentElement) {
+            layerList.insertBefore(draggingElement, currentElement);
+        } else {
+            layerList.appendChild(draggingElement);
+        }
+    });
+
+    layerList.addEventListener('touchend', (event) => {
+        const target = event.target.closest('.layer.dragging');
+        if (target) {
+            target.classList.remove('dragging');
+            const newOrder = Array.from(layerList.children).map(element => Number(element.dataset.id));
+            layers = newOrder.map(id => layers.find(layer => layer.id === id));
+            renderLayerList();
+            redrawLayers();
+        }
     });
 }
 
