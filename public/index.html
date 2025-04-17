@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Pixel Art - Otimizado</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos adicionais para tratamento de erros e feedback */
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .progress-container {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: var(--border-radius);
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .progress-container.active {
+            display: block;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            border-radius: var(--border-radius);
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .fallback-option {
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border: 1px solid #dee2e6;
+        }
+        
+        .fallback-option h3 {
+            margin-top: 0;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+        }
+        
+        .image-size-info {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            margin-top: 0.5rem;
+        }
+        
+        .optimization-tips {
+            background-color: #e9ecef;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .optimization-tips h4 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+        }
+        
+        .optimization-tips ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">Pixel<span>Art</span> Conversor</div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">Início</a></li>
+                    <li><a href="#como-funciona">Como Funciona</a></li>
+                    <li><a href="#exemplos">Exemplos</a></li>
+                    <li><a href="#sobre">Sobre</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Conteúdo principal -->
+    <main>
+        <div class="container">
+            <!-- Seção de introdução -->
+            <section class="hero">
+                <h1>Transforme Pixel Art Manual em Digital</h1>
+                <p>Converta suas pixel arts desenhadas à mão em versões digitais com cores sólidas. Basta fazer upload da sua imagem e deixar nosso algoritmo fazer a mágica!</p>
+            </section>
+
+            <!-- Seção de upload e configurações -->
+            <section class="upload-section">
+                <form id="uploadForm" class="upload-form">
+                    <div class="form-group">
+                        <label for="fileInput">Selecione sua imagem:</label>
+                        <div class="file-input-wrapper">
+                            <div class="file-input-button">Escolher Arquivo</div>
+                            <input type="file" id="fileInput" name="file" accept=".png,.jpg,.jpeg,.bmp,.tiff,.tif,.webp" required>
+                        </div>
+                        <div id="fileName" class="file-name">Nenhum arquivo selecionado</div>
+                        <div id="imageInfo" class="image-size-info"></div>
+                    </div>
+
+                    <div class="options-grid">
+                        <div class="option-card">
+                            <div class="option-title">Tamanho do Pixel</div>
+                            <div class="option-content">
+                                <input type="range" id="pixelSize" name="pixel_size" min="1" max="20" value="10" class="range-slider">
+                                <div class="range-value"><span id="pixelSizeValue">10</span> pixels</div>
+                            </div>
+                        </div>
+
+                        <div class="option-card">
+                            <div class="option-title">Opções de Saída</div>
+                            <div class="option-content">
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" id="withGrid" name="with_grid">
+                                    <label for="withGrid">Adicionar grade</label>
+                                </div>
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" id="enhanceColors" name="enhance_colors" checked>
+                                    <label for="enhanceColors">Melhorar cores</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="optimization-tips">
+                        <h4>Dicas para melhores resultados:</h4>
+                        <ul>
+                            <li>Use imagens com grade visível e bem definida</li>
+                            <li>Imagens muito grandes (>1000px) serão redimensionadas automaticamente</li>
+                            <li>Para pixel arts complexas, considere usar a versão desktop do aplicativo</li>
+                        </ul>
+                    </div>
+
+                    <button type="submit" class="submit-button" id="convertButton">Converter</button>
+                    
+                    <div id="progressContainer" class="progress-container">
+                        <div id="progressBar" class="progress-bar"></div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Seção de resultados (inicialmente oculta) -->
+            <section id="resultsSection" class="results-section">
+                <h2 class="results-title">Resultados da Conversão</h2>
+                <div id="alertContainer"></div>
+                <div id="resultsGrid" class="results-grid">
+                    <!-- Os resultados serão inseridos aqui via JavaScript -->
+                </div>
+            </section>
+
+            <!-- Seção "Como Funciona" -->
+            <section id="como-funciona" class="info-section">
+                <h2>Como Funciona</h2>
+                <div class="steps-container">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Upload</h3>
+                            <p>Faça upload da sua pixel art desenhada à mão (digitalizada em imagem).</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Detecção de Grade</h3>
+                            <p>Nosso algoritmo detecta automaticamente a grade na imagem.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Análise de Cores</h3>
+                            <p>Identificamos a cor predominante em cada célula da grade.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>Geração Digital</h3>
+                            <p>Criamos uma versão digital da sua pixel art com cores sólidas.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção de Exemplos -->
+            <section id="exemplos" class="examples-section">
+                <h2>Exemplos</h2>
+                <div class="examples-grid">
+                    <div class="example-card">
+                        <div class="example-images">
+                            <img src="/images/example_original_1.png" alt="Pixel Art Original" class="example-image">
+                            <img src="/images/example_converted_1.png" alt="Pixel Art Convertida" class="example-image">
+                        </div>
+                        <div class="example-caption">Coração: Antes e Depois</div>
+                    </div>
+                    <div class="example-card">
+                        <div class="example-images">
+                            <img src="/images/example_original_2.png" alt="Pixel Art Original" class="example-image">
+                            <img src="/images/example_converted_2.png" alt="Pixel Art Convertida" class="example-image">
+                        </div>
+                        <div class="example-caption">Emoji: Antes e Depois</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção Sobre -->
+            <section id="sobre" class="about-section">
+                <h2>Sobre o Projeto</h2>
+                <p>O Conversor de Pixel Art foi desenvolvido para ajudar artistas e entusiastas a digitalizar suas criações de pixel art feitas à mão. Utilizando técnicas avançadas de processamento de imagem e inteligência artificial, nosso aplicativo identifica automaticamente a estrutura da grade e as cores em cada célula, gerando uma versão digital limpa e profissional da sua arte.</p>
+                <p>Esta versão otimizada foi projetada especificamente para funcionar com o ambiente serverless do Vercel, permitindo o processamento de imagens maiores e mais complexas dentro das limitações da plataforma.</p>
+                <p>Para pixel arts muito grandes ou complexas, recomendamos usar a versão desktop do aplicativo, que não tem as limitações de tempo e memória da versão web.</p>
+            </section>
+        </div>
+    </main>
+
+    <!-- Rodapé -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-logo">Pixel<span>Art</span> Conversor</div>
+            <div class="footer-links">
+                <ul>
+                    <li><a href="#">Início</a></li>
+                    <li><a href="#como-funciona">Como Funciona</a></li>
+                    <li><a href="#exemplos">Exemplos</a></li>
+                    <li><a href="#sobre">Sobre</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loader -->
+    <div id="loaderContainer" class="loader-container">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/script-vercel-optimized.js"></script>
+</body>
+</html>
